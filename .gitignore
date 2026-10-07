@@ -1,0 +1,19 @@
+# Visual Studio / .NET Core
+**/bin/
+**/obj/
+**/.vs/
+*.user
+*.suo
+appsettings.Development.json
+
+# Node / React
+**/node_modules/
+**/dist/
+**/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
