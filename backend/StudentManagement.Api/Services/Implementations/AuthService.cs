@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StudentManagement.Api.Data;
 using StudentManagement.Api.DTOs.Auth;
+using StudentManagement.Api.DTOs.Common;
 using StudentManagement.Api.Services.Interfaces;
 
 namespace StudentManagement.Api.Services.Implementations;
@@ -66,6 +67,52 @@ public class AuthService : IAuthService
             Email = user.Email,
             Role = user.Role
         };
+    }
+
+    public async Task<ApiResponseDto<UserDto>> RegisterAsync(RegisterRequestDto request)
+    {
+        var normalizedUsername = request.Username.Trim();
+        var normalizedEmail = request.Email.Trim().ToLower();
+
+        // 1. Check duplicate username (case-insensitive)
+        var existingUsername = await _context.Users
+            .AnyAsync(u => u.Username.ToLower() == normalizedUsername.ToLower());
+        if (existingUsername)
+        {
+            return ApiResponseDto<UserDto>.Fail("A user with this username already exists.");
+        }
+
+        // 2. Check duplicate email (case-insensitive)
+        var existingEmail = await _context.Users
+            .AnyAsync(u => u.Email.ToLower() == normalizedEmail);
+        if (existingEmail)
+        {
+            return ApiResponseDto<UserDto>.Fail("A user with this email address already exists.");
+        }
+
+        // 3. Create new user - strictly force Role = "Staff" (never Admin)
+        var newUser = new Entities.User
+        {
+            Username = normalizedUsername,
+            Email = normalizedEmail,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            Role = "Staff",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _context.Users.AddAsync(newUser);
+        await _context.SaveChangesAsync();
+
+        var userDto = new UserDto
+        {
+            Id = newUser.Id,
+            Username = newUser.Username,
+            Email = newUser.Email,
+            Role = newUser.Role
+        };
+
+        return ApiResponseDto<UserDto>.Ok(userDto, "Account registered successfully. You can now log in.");
     }
 
     private string GenerateJwtToken(Entities.User user)

@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 
 import { Login } from './pages/Login';
+import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { StudentList } from './pages/Students/StudentList';
 import { StudentCreate } from './pages/Students/StudentCreate';
@@ -18,6 +19,8 @@ export const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Register />} />
+          <Route path="/register" element={<Navigate to="/signup" replace />} />
 
           <Route
             element={

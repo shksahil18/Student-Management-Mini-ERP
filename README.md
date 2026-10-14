@@ -164,6 +164,7 @@ erDiagram
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
 | `POST` | `/api/auth/login` | Public | Authenticates credentials, returns JWT & user profile |
+| `POST` | `/api/auth/register` | Public | Registers a new staff account (least-privileged Staff role) |
 | `GET` | `/api/auth/me` | Authenticated | Returns current authenticated user |
 
 ### Students (`/api/students`)

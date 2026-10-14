@@ -33,3 +33,18 @@
   - **Printable Receipts:** Implemented `ReceiptModal` with `@media print` styling, receipt breakdown, and one-click browser print dialog.
   - **CSV Export:** Implemented export endpoints and frontend one-click export for student lists and financial summaries.
 - **Testing & Build Verification:** Completed `npm run build` (0 errors), tested end-to-end integration with the backend API.
+
+### Phase 2: Known Education Design Enhancement & Self-Registration
+- **Design Alignment (ThemeWagon Known):** Crafted `frontend/src/assets/known-theme.css` with education-inspired brand accents (emerald green `#29ca8e`, clean split card architecture, responsive layout, clear focus rings, and soft surfaces).
+- **Additive Registration Endpoint:**
+  - Added `RegisterRequestDto` with input validations (username length, email format, password confirmation match).
+  - Implemented `IAuthService.RegisterAsync` and `AuthController.Register` returning HTTP 201 Created on success and HTTP 409 Conflict on duplicate username/email.
+  - Enforced least-privilege role: All public registrations are strictly assigned `Role = "Staff"`; client attempts to self-escalate to `Admin` are completely ignored.
+  - Zero database schema migrations required (existing SQL Server `dbo.Users` table schema already supports all required fields).
+- **Frontend Registration & Enhanced Login:**
+  - Implemented `frontend/src/pages/Register.jsx` with educational brand showcase, real-time client validation, loading state, and password visibility toggles.
+  - Enhanced `frontend/src/pages/Login.jsx` with the Known split-card visual design, post-registration success banner, and password visibility toggles.
+  - **Preserved Existing Demo Logins:** 👑 `admin / Admin@123` and 👤 `staff / Staff@123` demo pills remain completely functional and default-selected for one-click testing.
+  - Configured routes `/signup` and `/register` in `frontend/src/App.jsx`.
+- **Verification:** Verified end-to-end registration flow, duplicate detection, JWT generation, dashboard accessibility, and frontend production build (`1660 modules transformed, 0 errors`).
+

@@ -54,4 +54,27 @@ public class AuthController : ControllerBase
 
         return Ok(ApiResponseDto<UserDto>.Ok(user));
     }
+
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponseDto<UserDto>>> Register([FromBody] RegisterRequestDto request)
+    {
+        if (!ModelState.IsValid)
+        {
+            var error = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .FirstOrDefault() ?? "Invalid registration payload.";
+            return BadRequest(ApiResponseDto<UserDto>.Fail(error));
+        }
+
+        var result = await _authService.RegisterAsync(request);
+        if (!result.Success)
+        {
+            return Conflict(result);
+        }
+
+        return StatusCode(201, result);
+    }
 }
+
