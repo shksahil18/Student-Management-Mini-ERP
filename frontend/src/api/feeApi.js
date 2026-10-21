@@ -25,4 +25,9 @@ export const feeApi = {
     const response = await apiClient.get(`/fees/receipts/${receiptNumber}`);
     return response.data;
   },
+
+  triggerReminders: async () => {
+    const response = await apiClient.post('/fees/trigger-reminders');
+    return response.data;
+  },
 };

@@ -76,5 +76,72 @@ public class AuthController : ControllerBase
 
         return StatusCode(201, result);
     }
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponseDto<bool>>> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ApiResponseDto<bool>.Fail("A valid email address is required."));
+        }
+
+        var result = await _authService.ForgotPasswordAsync(request);
+        return Ok(result);
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponseDto<bool>>> ResetPassword([FromBody] ResetPasswordRequestDto request)
+    {
+        if (!ModelState.IsValid)
+        {
+            var error = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .FirstOrDefault() ?? "Invalid password reset data.";
+            return BadRequest(ApiResponseDto<bool>.Fail(error));
+        }
+
+        var result = await _authService.ResetPasswordAsync(request);
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("verify-email")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponseDto<bool>>> VerifyEmail([FromBody] VerifyEmailRequestDto request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Token))
+        {
+            return BadRequest(ApiResponseDto<bool>.Fail("Verification token is required."));
+        }
+
+        var result = await _authService.VerifyEmailAsync(request);
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("resend-verification")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponseDto<bool>>> ResendVerification([FromBody] ResendVerificationRequestDto request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ApiResponseDto<bool>.Fail("A valid email address is required."));
+        }
+
+        var result = await _authService.ResendVerificationAsync(request);
+        return Ok(result);
+    }
 }
+
 

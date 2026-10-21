@@ -6,6 +6,9 @@ import { AppLayout } from './components/layout/AppLayout';
 
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
+import { VerifyEmail } from './pages/VerifyEmail';
 import { Dashboard } from './pages/Dashboard';
 import { StudentList } from './pages/Students/StudentList';
 import { StudentCreate } from './pages/Students/StudentCreate';
@@ -21,6 +24,9 @@ export const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Register />} />
           <Route path="/register" element={<Navigate to="/signup" replace />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
           <Route
             element={

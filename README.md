@@ -222,7 +222,7 @@ cd frontend
 npm install
 npm run dev
 ```
-Frontend runs at `http://localhost:5173`.
+Frontend runs at `http://localhost:5174`.
 
 ---
 
@@ -251,3 +251,56 @@ Frontend runs at `http://localhost:5173`.
 
 ### Q5: How was the Change Request (CR-01) handled?
 **Answer**: CR-01 requested printable receipts and CSV export. For printable receipts, we created a specialized `ReceiptModal` with `@media print` CSS rules that hides navigation shells and displays a clean institutional receipt layout triggering `window.print()`. For CSV export, an endpoint `/api/students/export` streams structured CSV data directly as `text/csv`, with a one-click download button integrated on the frontend dashboard and student directory.
+
+---
+
+## 9. Email Notification System & Auth Security
+
+### Architecture & Capabilities
+The system includes an enterprise-grade, asynchronous email notification and security subsystem designed with the **Transactional Outbox Pattern**:
+
+1. **Admission Confirmation Email**: Automatically queued upon student registration with student code, course, admission date, and online portal access link.
+2. **Payment Receipt Email**: Dispatched upon fee payment transaction commit (`ReceiptNumber`, amount paid, remaining balance, and audit reference).
+3. **Automated Fee Reminders**:
+   - **Upcoming Reminders**: Queued for active students whose tuition fee is due within the configurable lead window (`UpcomingReminderLeadDays = 3`).
+   - **Overdue Reminders**: Queued for overdue fees with cooldown enforcement (`OverdueReminderCooldownDays = 7`) to prevent student spamming.
+   - **Suppression Logic**: Automatically suppresses reminders for inactive students, zero outstanding balances, or already-reminded fees within cooldown.
+   - **Manual Trigger**: Admin can trigger instant reminder processing via `POST /api/fees/trigger-reminders`.
+4. **Cryptographic Single-Use Email Verification**:
+   - Verification tokens generated via `RandomNumberGenerator` (256-bit entropy).
+   - Only the SHA-256 hash (`TokenHash`) is stored in the database.
+   - Token expires after 24 hours (`VerificationTokenExpiryHours`) and is invalidated immediately on first use.
+5. **Secure Single-Use Password Reset**:
+   - Generic response prevents user enumeration attacks.
+   - Cryptographic reset token sent via email, hashed in database, expires in 60 minutes (`PasswordResetTokenExpiryMinutes`).
+   - Frontend pages `/forgot-password`, `/reset-password`, and `/verify-email` styled with the Known institutional theme.
+
+### SMTP Configuration (`appsettings.json`)
+```json
+"Email": {
+  "SmtpHost": "smtp.gmail.com",
+  "SmtpPort": 587,
+  "SmtpUsername": "your-institution-email@gmail.com",
+  "SmtpPassword": "your-app-password",
+  "EnableSsl": true,
+  "SenderEmail": "noreply@erp.institution.edu",
+  "SenderName": "Known Student Management ERP",
+  "InstitutionName": "Known Institute of Technology",
+  "SupportContact": "support@institution.edu",
+  "FrontendBaseUrl": "http://localhost:5173",
+  "VerificationTokenExpiryHours": 24,
+  "PasswordResetTokenExpiryMinutes": 60,
+  "UpcomingReminderLeadDays": 3,
+  "OverdueReminderCooldownDays": 7,
+  "ReminderCheckIntervalMinutes": 60,
+  "EnableBackgroundScheduler": true
+}
+```
+*Note: If SMTP credentials are not configured, the system gracefully falls back to an offline logger simulation, logging email contents to console/outbox without throwing unhandled exceptions or disrupting user operations.*
+
+### Automated Tests
+Run unit and integration tests covering templates, cryptographic token hashing, reminder qualification, outbox persistence, and fallback delivery:
+```powershell
+dotnet test backend/StudentManagement.Tests/StudentManagement.Tests.csproj
+```
+

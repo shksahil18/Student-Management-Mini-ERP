@@ -77,4 +77,12 @@ public class FeesController : ControllerBase
 
         return Ok(ApiResponseDto<ReceiptDto>.Ok(receipt));
     }
+
+    [HttpPost("trigger-reminders")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ApiResponseDto<int>>> TriggerFeeReminders([FromServices] IFeeReminderService reminderService)
+    {
+        var count = await reminderService.ProcessUpcomingAndOverdueRemindersAsync();
+        return Ok(ApiResponseDto<int>.Ok(count, $"Successfully evaluated fee reminders. {count} reminder email(s) queued."));
+    }
 }

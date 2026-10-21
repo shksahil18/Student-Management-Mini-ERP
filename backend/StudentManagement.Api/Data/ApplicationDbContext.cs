@@ -14,6 +14,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Fee> Fees => Set<Fee>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<EmailOutbox> EmailOutbox => Set<EmailOutbox>();
+    public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<FeeReminderLog> FeeReminderLogs => Set<FeeReminderLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,6 +34,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
             entity.Property(e => e.Role).IsRequired().HasMaxLength(20).HasDefaultValue("Staff");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsEmailVerified).HasDefaultValue(true);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
         });
 
@@ -100,6 +105,75 @@ public class ApplicationDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => e.FeeId);
+        });
+
+        // 5. EmailOutbox Configuration
+        modelBuilder.Entity<EmailOutbox>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ToEmail).IsRequired().HasMaxLength(150);
+            entity.Property(e => e.ToName).HasMaxLength(100);
+            entity.Property(e => e.Subject).IsRequired().HasMaxLength(250);
+            entity.Property(e => e.EmailType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ReferenceId).HasMaxLength(100);
+            entity.Property(e => e.Status).HasConversion<int>().IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+
+            entity.HasIndex(e => new { e.Status, e.RetryCount });
+            entity.HasIndex(e => new { e.EmailType, e.ReferenceId });
+        });
+
+        // 6. EmailVerificationToken Configuration
+        modelBuilder.Entity<EmailVerificationToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(128);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+
+            entity.HasOne(t => t.User)
+                  .WithMany(u => u.VerificationTokens)
+                  .HasForeignKey(t => t.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.TokenHash);
+            entity.HasIndex(e => new { e.UserId, e.IsUsed });
+        });
+
+        // 7. PasswordResetToken Configuration
+        modelBuilder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(128);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+
+            entity.HasOne(t => t.User)
+                  .WithMany(u => u.PasswordResetTokens)
+                  .HasForeignKey(t => t.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.TokenHash);
+            entity.HasIndex(e => new { e.UserId, e.IsUsed });
+        });
+
+        // 8. FeeReminderLog Configuration
+        modelBuilder.Entity<FeeReminderLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.RecipientEmail).IsRequired().HasMaxLength(150);
+            entity.Property(e => e.OutstandingAmount).HasPrecision(18, 2).IsRequired();
+            entity.Property(e => e.SentAt).HasDefaultValueSql("SYSUTCDATETIME()");
+
+            entity.HasOne(r => r.Fee)
+                  .WithMany()
+                  .HasForeignKey(r => r.FeeId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(r => r.Student)
+                  .WithMany()
+                  .HasForeignKey(r => r.StudentId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.FeeId, e.ReminderType, e.SentAt });
         });
     }
 }

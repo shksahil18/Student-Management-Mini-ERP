@@ -12,10 +12,20 @@ namespace StudentManagement.Api.Services.Implementations;
 public class StudentService : IStudentService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IEmailService _emailService;
+    private readonly IEmailTemplateService _emailTemplateService;
+    private readonly ILogger<StudentService> _logger;
 
-    public StudentService(ApplicationDbContext context)
+    public StudentService(
+        ApplicationDbContext context,
+        IEmailService emailService,
+        IEmailTemplateService emailTemplateService,
+        ILogger<StudentService> logger)
     {
         _context = context;
+        _emailService = emailService;
+        _emailTemplateService = emailTemplateService;
+        _logger = logger;
     }
 
     public async Task<PagedResultDto<StudentDto>> GetPagedStudentsAsync(StudentQueryParameters query)
@@ -173,7 +183,7 @@ public class StudentService : IStudentService
         await _context.Students.AddAsync(student);
         await _context.SaveChangesAsync();
 
-        return new StudentDto
+        var resultDto = new StudentDto
         {
             Id = student.Id,
             StudentCode = student.StudentCode,
@@ -189,6 +199,19 @@ public class StudentService : IStudentService
             IsActive = student.IsActive,
             CreatedAt = student.CreatedAt
         };
+
+        // Queue admission confirmation email asynchronously (only after successful DB commit)
+        try
+        {
+            var emailMsg = _emailTemplateService.BuildAdmissionConfirmationEmail(resultDto);
+            await _emailService.QueueEmailAsync(emailMsg);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to queue admission email for {StudentCode}", student.StudentCode);
+        }
+
+        return resultDto;
     }
 
     public async Task<StudentDto?> UpdateStudentAsync(int id, UpdateStudentDto dto)

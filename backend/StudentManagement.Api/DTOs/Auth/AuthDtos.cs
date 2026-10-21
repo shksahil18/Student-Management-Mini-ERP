@@ -38,3 +38,37 @@ public class RegisterRequestDto
     [System.ComponentModel.DataAnnotations.Compare("Password", ErrorMessage = "Password and confirmation do not match.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
+
+public class ForgotPasswordRequestDto
+{
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email address is required.")]
+    [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "A valid email address is required.")]
+    public string Email { get; set; } = string.Empty;
+}
+
+public class ResetPasswordRequestDto
+{
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Verification token is required.")]
+    public string Token { get; set; } = string.Empty;
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "New password is required.")]
+    [System.ComponentModel.DataAnnotations.StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long.")]
+    public string NewPassword { get; set; } = string.Empty;
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Password confirmation is required.")]
+    [System.ComponentModel.DataAnnotations.Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
+    public string ConfirmPassword { get; set; } = string.Empty;
+}
+
+public class VerifyEmailRequestDto
+{
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Verification token is required.")]
+    public string Token { get; set; } = string.Empty;
+}
+
+public class ResendVerificationRequestDto
+{
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email address is required.")]
+    [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "A valid email address is required.")]
+    public string Email { get; set; } = string.Empty;
+}

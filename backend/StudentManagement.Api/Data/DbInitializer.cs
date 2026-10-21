@@ -10,6 +10,92 @@ public static class DbInitializer
         // Ensure database exists
         await context.Database.EnsureCreatedAsync();
 
+        // Ensure newly introduced Email Notification & Security tables exist
+        var createTablesSql = @"
+            IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'IsEmailVerified')
+            BEGIN
+                ALTER TABLE [Users] ADD [IsEmailVerified] bit NOT NULL DEFAULT CAST(1 AS bit);
+            END
+
+            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'EmailOutbox')
+            BEGIN
+                CREATE TABLE [EmailOutbox] (
+                    [Id] int NOT NULL IDENTITY,
+                    [ToEmail] nvarchar(150) NOT NULL,
+                    [ToName] nvarchar(100) NOT NULL DEFAULT '',
+                    [Subject] nvarchar(250) NOT NULL,
+                    [HtmlBody] nvarchar(max) NOT NULL,
+                    [PlainTextBody] nvarchar(max) NOT NULL,
+                    [EmailType] nvarchar(50) NOT NULL,
+                    [ReferenceId] nvarchar(100) NULL,
+                    [Status] int NOT NULL,
+                    [RetryCount] int NOT NULL DEFAULT 0,
+                    [MaxRetries] int NOT NULL DEFAULT 3,
+                    [ErrorMessage] nvarchar(max) NULL,
+                    [CreatedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
+                    [ProcessedAt] datetime2 NULL,
+                    CONSTRAINT [PK_EmailOutbox] PRIMARY KEY ([Id])
+                );
+                CREATE INDEX [IX_EmailOutbox_Status_RetryCount] ON [EmailOutbox] ([Status], [RetryCount]);
+                CREATE INDEX [IX_EmailOutbox_EmailType_ReferenceId] ON [EmailOutbox] ([EmailType], [ReferenceId]);
+            END
+
+            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'EmailVerificationTokens')
+            BEGIN
+                CREATE TABLE [EmailVerificationTokens] (
+                    [Id] int NOT NULL IDENTITY,
+                    [UserId] int NOT NULL,
+                    [TokenHash] nvarchar(128) NOT NULL,
+                    [ExpiresAt] datetime2 NOT NULL,
+                    [IsUsed] bit NOT NULL DEFAULT CAST(0 AS bit),
+                    [UsedAt] datetime2 NULL,
+                    [CreatedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
+                    CONSTRAINT [PK_EmailVerificationTokens] PRIMARY KEY ([Id]),
+                    CONSTRAINT [FK_EmailVerificationTokens_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+                );
+                CREATE INDEX [IX_EmailVerificationTokens_TokenHash] ON [EmailVerificationTokens] ([TokenHash]);
+                CREATE INDEX [IX_EmailVerificationTokens_UserId_IsUsed] ON [EmailVerificationTokens] ([UserId], [IsUsed]);
+            END
+
+            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PasswordResetTokens')
+            BEGIN
+                CREATE TABLE [PasswordResetTokens] (
+                    [Id] int NOT NULL IDENTITY,
+                    [UserId] int NOT NULL,
+                    [TokenHash] nvarchar(128) NOT NULL,
+                    [ExpiresAt] datetime2 NOT NULL,
+                    [IsUsed] bit NOT NULL DEFAULT CAST(0 AS bit),
+                    [UsedAt] datetime2 NULL,
+                    [CreatedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
+                    CONSTRAINT [PK_PasswordResetTokens] PRIMARY KEY ([Id]),
+                    CONSTRAINT [FK_PasswordResetTokens_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+                );
+                CREATE INDEX [IX_PasswordResetTokens_TokenHash] ON [PasswordResetTokens] ([TokenHash]);
+                CREATE INDEX [IX_PasswordResetTokens_UserId_IsUsed] ON [PasswordResetTokens] ([UserId], [IsUsed]);
+            END
+
+            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'FeeReminderLogs')
+            BEGIN
+                CREATE TABLE [FeeReminderLogs] (
+                    [Id] int NOT NULL IDENTITY,
+                    [FeeId] int NOT NULL,
+                    [StudentId] int NOT NULL,
+                    [ReminderType] int NOT NULL,
+                    [OutstandingAmount] decimal(18,2) NOT NULL,
+                    [SentAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
+                    [RecipientEmail] nvarchar(150) NOT NULL,
+                    [IsSuccess] bit NOT NULL DEFAULT CAST(1 AS bit),
+                    [ErrorMessage] nvarchar(max) NULL,
+                    CONSTRAINT [PK_FeeReminderLogs] PRIMARY KEY ([Id]),
+                    CONSTRAINT [FK_FeeReminderLogs_Fees_FeeId] FOREIGN KEY ([FeeId]) REFERENCES [Fees] ([Id]) ON DELETE CASCADE,
+                    CONSTRAINT [FK_FeeReminderLogs_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id])
+                );
+                CREATE INDEX [IX_FeeReminderLogs_FeeId_ReminderType_SentAt] ON [FeeReminderLogs] ([FeeId], [ReminderType], [SentAt]);
+            END
+        ";
+
+        await context.Database.ExecuteSqlRawAsync(createTablesSql);
+
         // 1. Seed or Update Users with fresh BCrypt hashes
         var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Username == "admin");
         if (adminUser == null)

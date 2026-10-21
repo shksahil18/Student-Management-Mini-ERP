@@ -3,13 +3,13 @@
    -------------------------------------------------------------------------- */
 
 :root {
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
+  --primary: #33006F;
+  --primary-hover: #E6E6FA ;
   --primary-light: #eef2ff;
   --bg-main: #f8fafc;
   --bg-surface: #ffffff;
   --border: #e2e8f0;
-  --border-focus: #6366f1;
+  --border-focus: #33006F;
   --text-main: #0f172a;
   --text-muted: #64748b;
   --text-dim: #94a3b8;
@@ -68,13 +68,13 @@ a {
 }
 
 .brand-badge {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  color: white;
-  font-weight: 800;
-  font-size: 13px;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  letter-spacing: 0.05em;
+    background: linear-gradient(30deg, #33006F 10%, #E6E6FA 100%);
+    color: white;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.05em;
 }
 
 .brand-title {
@@ -259,11 +259,14 @@ a {
 }
 
 .panel-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    outline: none;
+    border-color: #33006F;
+    border-image: linear-gradient(90deg, #33006F 0%, #E6E6FA);
+    box-shadow: -5px 5px 15px rgba(51, 0, 111, 0.25), 5px 5px 15px rgba(230, 230, 250, 0.6);
 }
 
 .panel-header {
@@ -311,14 +314,23 @@ a {
 }
 
 .kpi-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: var(--shadow-sm);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    outline: none;
+    border-color: #33006F;
+    border-image: linear-gradient(90deg, #33006F 0%, #E6E6FA);
+    box-shadow: -5px 5px 15px rgba(51, 0, 111, 0.25), 5px 5px 15px rgba(230, 230, 250, 0.6);
+}
+
+.kpi-card:hover {
+    box-shadow: -5px 5px 15px rgba(51, 0, 111, 0.25), 5px 5px 15px rgba(230, 230, 250, 0.6);
+    background-color: var(--primary-light);
+    color: var(--primary);
 }
 
 .kpi-icon-wrapper {
@@ -359,7 +371,7 @@ a {
 .text-emerald { color: #059669 !important; }
 .text-amber { color: #d97706 !important; }
 .text-red { color: #dc2626 !important; }
-.text-indigo { color: #4f46e5 !important; }
+.text-indigo { color: #33006f !important; }
 .text-gray { color: #64748b !important; }
 
 /* ---------------- Two Column Feeds ---------------- */
@@ -412,16 +424,20 @@ a {
 
 /* ---------------- Tables & Grids ---------------- */
 .filter-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 20px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+    outline: none;
+    border-color: #33006F;
+    border-image: linear-gradient(90deg, #33006F 0%, #E6E6FA);
+    box-shadow: -5px 5px 15px rgba(51, 0, 111, 0.25), 5px 5px 15px rgba(230, 230, 250, 0.6);
 }
 
 .search-form {
@@ -563,7 +579,9 @@ a {
 }
 
 .badge-success { background-color: #dcfce7; color: #15803d; }
+.badge-success:hover { background-color: #16a34a; color: white; }
 .badge-danger { background-color: #fee2e2; color: #b91c1c; }
+.badge-danger:hover { background-color: #fd0202; color: white; }
 .badge-warning { background-color: #fef3c7; color: #b45309; }
 .badge-info { background-color: #e0f2fe; color: #0369a1; }
 .badge-neutral { background-color: #f1f5f9; color: #475569; }
@@ -586,7 +604,7 @@ a {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-hover);
+    background: linear-gradient(90deg, #33006F 35%, #E6E6FA 120%);
 }
 
 .btn-secondary {
@@ -701,7 +719,8 @@ a {
   color: #334155;
   border-bottom: 1px solid var(--border);
   padding-bottom: 8px;
-  margin-top: 10px;
+  margin-top: 6px;
+  margin-bottom: 4px;
 }
 
 .form-row-2 {
@@ -732,16 +751,23 @@ a {
   font-size: 13px;
   font-weight: 600;
   color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .form-group input, .form-group select {
-  padding: 10px 14px;
+  height: 42px;
+  padding: 8px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 14px;
+  font-family: inherit;
   outline: none;
   background-color: white;
+  color: var(--text-main);
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .form-group input:focus, .form-group select:focus {
@@ -773,6 +799,11 @@ a {
   border-top: 1px solid var(--border);
 }
 
+.form-actions .btn-primary,
+.form-actions .btn-secondary {
+  height: 42px;
+}
+
 /* ---------------- Student Detail Profile ---------------- */
 .profile-hero-card {
   background-color: var(--bg-surface);
@@ -789,7 +820,7 @@ a {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4f46e5, #9333ea);
+  background: linear-gradient(60deg, #33006F 30%, #E6E6FA 100%);
   color: white;
   font-size: 26px;
   font-weight: 800;
@@ -1016,40 +1047,51 @@ a {
   background-color: #f8fafc;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 14px;
-  margin-bottom: 16px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
-  margin-bottom: 6px;
+  align-items: center;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+  color: #334155;
+}
+
+.summary-row:last-child {
+  margin-bottom: 0;
 }
 
 .summary-row.highlight {
-  border-top: 1px solid var(--border);
-  padding-top: 8px;
-  font-size: 14px;
+  border-top: 1px dashed var(--border);
+  padding-top: 10px;
+  margin-top: 10px;
+  font-size: 14.5px;
 }
 
 .label-with-action {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 2px;
 }
 
 .btn-link {
   background: none;
   border: none;
   color: var(--primary);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 
 .btn-link:hover {
   text-decoration: underline;
+  background-color: var(--primary-light);
 }
 
 /* ---------------- Printable Receipt (CR-01) ---------------- */
@@ -1386,7 +1428,31 @@ a {
 
 .text-right { text-align: right; }
 .font-bold { font-weight: 700; }
-.font-semibold { font-weight: 600; }
+.font-semibold { font-weight: 600; color: #33006f;}
 .font-mono { font-family: monospace; }
 .text-center { text-align: center; }
 .empty-text { color: var(--text-dim); font-size: 14px; padding: 12px 0; }
+
+/* ---------------- Student Form Layout (Admission & Edit) ---------------- */
+.student-form-page {
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.student-form-page .panel-card {
+    padding: 32px 36px;
+    outline: none;
+    border-color: #33006F;
+    border-image: linear-gradient(90deg, #33006F 0%, #E6E6FA);
+    box-shadow: -5px 5px 15px rgba(51, 0, 111, 0.25), 5px 5px 15px rgba(230, 230, 250, 0.6);
+}
+
+@media (max-width: 768px) {
+  .student-form-page {
+    padding: 0 4px;
+  }
+  .student-form-page .panel-card {
+    padding: 20px 16px;
+  }
+}

@@ -160,7 +160,12 @@ export const Login = () => {
             </div>
 
             <div className="known-form-group">
-              <label htmlFor="password">Password</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label htmlFor="password" style={{ margin: 0 }}>Password</label>
+                <Link to="/forgot-password" className="known-auth-link" style={{ fontSize: '13px', fontWeight: 500 }}>
+                  Forgot password?
+                </Link>
+              </div>
               <div className="known-input-wrapper">
                 <Lock size={18} className="known-input-icon" />
                 <input

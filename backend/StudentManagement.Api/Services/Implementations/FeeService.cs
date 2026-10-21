@@ -9,10 +9,20 @@ namespace StudentManagement.Api.Services.Implementations;
 public class FeeService : IFeeService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IEmailService _emailService;
+    private readonly IEmailTemplateService _emailTemplateService;
+    private readonly ILogger<FeeService> _logger;
 
-    public FeeService(ApplicationDbContext context)
+    public FeeService(
+        ApplicationDbContext context,
+        IEmailService emailService,
+        IEmailTemplateService emailTemplateService,
+        ILogger<FeeService> logger)
     {
         _context = context;
+        _emailService = emailService;
+        _emailTemplateService = emailTemplateService;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<FeeDto>> GetFeesByStudentIdAsync(int studentId)
@@ -181,7 +191,7 @@ public class FeeService : IFeeService
 
             var user = await _context.Users.FindAsync(currentUserId);
 
-            return new ReceiptDto
+            var receiptDto = new ReceiptDto
             {
                 ReceiptNumber = payment.ReceiptNumber,
                 PaymentDate = payment.PaymentDate,
@@ -199,6 +209,22 @@ public class FeeService : IFeeService
                 RemainingOutstanding = fee.OutstandingAmount,
                 FeeStatus = fee.Status
             };
+
+            // Queue receipt email only after successful database commit
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(fee.Student.Email))
+                {
+                    var emailMsg = _emailTemplateService.BuildFeeReceiptEmail(receiptDto, fee.Student.Email);
+                    await _emailService.QueueEmailAsync(emailMsg);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to queue receipt email for {ReceiptNumber}", receiptDto.ReceiptNumber);
+            }
+
+            return receiptDto;
         }
         catch
         {

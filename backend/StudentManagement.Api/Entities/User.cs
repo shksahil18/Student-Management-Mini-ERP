@@ -8,8 +8,11 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public string Role { get; set; } = "Staff"; // "Admin" or "Staff"
     public bool IsActive { get; set; } = true;
+    public bool IsEmailVerified { get; set; } = true; // Defaults to true for backward compatibility with seeded users
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
     public ICollection<Payment> RecordedPayments { get; set; } = new List<Payment>();
+    public ICollection<EmailVerificationToken> VerificationTokens { get; set; } = new List<EmailVerificationToken>();
+    public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
 }

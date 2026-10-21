@@ -36,6 +36,7 @@ export const FeeList = () => {
   const [feeStudentId, setFeeStudentId] = useState('');
   const [feeAmount, setFeeAmount] = useState('');
   const [feeDueDate, setFeeDueDate] = useState('');
+  const [feeError, setFeeError] = useState('');
   const [isSubmittingFee, setIsSubmittingFee] = useState(false);
 
   useEffect(() => {
@@ -92,8 +93,9 @@ export const FeeList = () => {
 
   const handleCreateFeeSubmit = async (e) => {
     e.preventDefault();
+    setFeeError('');
     if (!feeStudentId || !feeAmount || !feeDueDate) {
-      alert('All fields are required.');
+      setFeeError('All fields are required.');
       return;
     }
 
@@ -110,13 +112,19 @@ export const FeeList = () => {
         setFeeStudentId('');
         setFeeAmount('');
         setFeeDueDate('');
+        setFeeError('');
         fetchData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to assign fee');
+      setFeeError(err.response?.data?.message || 'Failed to assign fee.');
     } finally {
       setIsSubmittingFee(false);
     }
+  };
+
+  const openAssignFeeModal = () => {
+    setFeeError('');
+    setIsCreateFeeOpen(true);
   };
 
   return (
@@ -127,7 +135,7 @@ export const FeeList = () => {
           <p className="page-description">Track tuition receivables, balances, and collection vouchers</p>
         </div>
         <div className="header-actions">
-          <button className="btn-primary" onClick={() => setIsCreateFeeOpen(true)}>
+          <button className="btn-primary" onClick={openAssignFeeModal}>
             <PlusCircle size={16} />
             <span>Assign Fee Structure</span>
           </button>
@@ -238,6 +246,12 @@ export const FeeList = () => {
 
       {/* Modal: Assign Fee */}
       <Modal isOpen={isCreateFeeOpen} onClose={() => setIsCreateFeeOpen(false)} title="Assign Fee to Student">
+        {feeError && (
+          <div className="alert-error" style={{ marginBottom: '16px' }}>
+            <AlertCircle size={16} />
+            <span>{feeError}</span>
+          </div>
+        )}
         <form onSubmit={handleCreateFeeSubmit} className="erp-form">
           <div className="form-group">
             <label>Select Student <span className="req">*</span></label>
