@@ -65,6 +65,22 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowCredentials();
     });
+
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("VercelFrontend", policy =>
+        {
+            policy
+                .WithOrigins(
+                    "https://student-management-mini-erp-d2609.vercel.app",
+                    "https://student-management-mini-erp-d2609-j6a0sagx9.vercel.app"
+                // Add your stable Vercel production domain here too,
+                // if it is different from the preview URL above.
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+    });
 });
 
 builder.Services.AddControllers();
@@ -107,6 +123,8 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
+
 // 6. Global Exception Handling Middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -119,6 +137,8 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseCors("AllowFrontend");
+// Enable CORS - Must be placed after UseRouting and before UseAuthorization
+app.UseCors("VercelFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
