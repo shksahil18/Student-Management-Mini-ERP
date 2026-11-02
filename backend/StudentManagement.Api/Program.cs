@@ -72,6 +72,7 @@ builder.Services.AddCors(options =>
                 "http://localhost:5173",
                 "http://localhost:5174",
                 "http://localhost:3000",
+                "https://student-management-mini-erp-d2609.vercel.app",
                 "https://student-management-mini-erp-d2609-j6a0sagx9.vercel.app"
             )
             .AllowAnyHeader()
