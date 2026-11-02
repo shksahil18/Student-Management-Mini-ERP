@@ -13,14 +13,18 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Add SQL Server & Entity Framework Core
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Server=localhost;Database=StudentManagementDb;Trusted_Connection=True;TrustServerCertificate=True;";
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // 2. Register Business Services (Dependency Injection)
-builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
+builder.Services.Configure<EmailOptions>(
+    builder.Configuration.GetSection(EmailOptions.SectionName));
+
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 builder.Services.AddScoped<IFeeReminderService, FeeReminderService>();
+
 builder.Services.AddHostedService<EmailAndReminderBackgroundService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -30,7 +34,10 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // 3. Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? "StudentManagementMiniErpSuperSecretSecurityKey2026!WithSufficientLengthForHmacSha256");
+
+var key = Encoding.UTF8.GetBytes(
+    jwtSettings["Key"] ??
+    "StudentManagementMiniErpSuperSecretSecurityKey2026!WithSufficientLengthForHmacSha256");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -41,6 +48,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
@@ -60,26 +68,15 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "http://localhost:5174")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-
-    builder.Services.AddCors(options =>
-    {
-        options.AddPolicy("VercelFrontend", policy =>
-        {
-            policy
-                .WithOrigins(
-                    "https://student-management-mini-erp-d2609.vercel.app",
-                    "https://student-management-mini-erp-d2609-j6a0sagx9.vercel.app"
-                // Add your stable Vercel production domain here too,
-                // if it is different from the preview URL above.
-                )
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        });
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "http://localhost:5174",
+                "http://localhost:3000",
+                "https://student-management-mini-erp-d2609-j6a0sagx9.vercel.app"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -87,6 +84,7 @@ builder.Services.AddControllers();
 
 // 5. Configure Swagger with JWT Bearer UI
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -121,6 +119,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// Build application
 var app = builder.Build();
 
 app.UseHttpsRedirection();
@@ -130,25 +129,28 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // 7. Enable Swagger in Development & Production
 app.UseSwagger();
+
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Student Management Mini-ERP API v1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json",
+        "Student Management Mini-ERP API v1");
+
     c.RoutePrefix = "swagger";
 });
 
+// 8. CORS middleware - use the registered policy only once
 app.UseCors("AllowFrontend");
-// Enable CORS - Must be placed after UseRouting and before UseAuthorization
-app.UseCors("VercelFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// 8. Auto-migrate/seed database on startup
+// 9. Auto-migrate/seed database on startup
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
@@ -157,7 +159,8 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding or migrating the database.");
+        logger.LogError(ex,
+            "An error occurred while seeding or migrating the database.");
     }
 }
 
