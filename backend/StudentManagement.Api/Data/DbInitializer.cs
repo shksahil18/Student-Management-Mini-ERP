@@ -7,8 +7,9 @@ public static class DbInitializer
 {
     public static async Task InitializeAsync(ApplicationDbContext context)
     {
-        // Ensure database exists
-        await context.Database.EnsureCreatedAsync();
+        // Apply the application's schema migrations. Supabase databases already
+        // contain system tables, so EnsureCreatedAsync would skip creating ours.
+        await context.Database.MigrateAsync();
 
         // Ensure newly introduced Email Notification & Security tables exist
         if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.SqlServer")
