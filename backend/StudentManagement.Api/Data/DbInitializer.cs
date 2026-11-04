@@ -11,6 +11,8 @@ public static class DbInitializer
         await context.Database.EnsureCreatedAsync();
 
         // Ensure newly introduced Email Notification & Security tables exist
+        if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.SqlServer")
+        {
         var createTablesSql = @"
             IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'IsEmailVerified')
             BEGIN
@@ -95,6 +97,7 @@ public static class DbInitializer
         ";
 
         await context.Database.ExecuteSqlRawAsync(createTablesSql);
+        }
 
         // 1. Seed or Update Users with fresh BCrypt hashes
         var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Username == "admin");
@@ -111,10 +114,6 @@ public static class DbInitializer
             };
             await context.Users.AddAsync(adminUser);
         }
-        else
-        {
-            adminUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123");
-        }
 
         var staffUser = await context.Users.FirstOrDefaultAsync(u => u.Username == "staff");
         if (staffUser == null)
@@ -129,10 +128,6 @@ public static class DbInitializer
                 CreatedAt = DateTime.UtcNow
             };
             await context.Users.AddAsync(staffUser);
-        }
-        else
-        {
-            staffUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("Staff@123");
         }
 
         await context.SaveChangesAsync();

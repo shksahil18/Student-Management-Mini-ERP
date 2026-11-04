@@ -35,7 +35,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Role).IsRequired().HasMaxLength(20).HasDefaultValue("Staff");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.IsEmailVerified).HasDefaultValue(true);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         // 2. Student Configuration
@@ -53,7 +53,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Course).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Gender).IsRequired().HasMaxLength(10);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // Composite search & filter indexes
             entity.HasIndex(e => new { e.LastName, e.FirstName });
@@ -68,7 +68,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.PaidAmount).HasPrecision(18, 2).HasDefaultValue(0.00m);
             entity.Property(e => e.OutstandingAmount).HasPrecision(18, 2).IsRequired();
             entity.Property(e => e.Status).IsRequired().HasMaxLength(20).HasDefaultValue("Pending");
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // Relationship: Student -> Fees (One-to-Many, Restrict Delete)
             entity.HasOne(f => f.Student)
@@ -89,8 +89,8 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Amount).HasPrecision(18, 2).IsRequired();
             entity.Property(e => e.PaymentMethod).IsRequired().HasMaxLength(30);
             entity.Property(e => e.Notes).HasMaxLength(255);
-            entity.Property(e => e.PaymentDate).HasDefaultValueSql("SYSUTCDATETIME()");
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.Property(e => e.PaymentDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // Relationship: Fee -> Payments (One-to-Many, Restrict Delete)
             entity.HasOne(p => p.Fee)
@@ -117,7 +117,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.EmailType).IsRequired().HasMaxLength(50);
             entity.Property(e => e.ReferenceId).HasMaxLength(100);
             entity.Property(e => e.Status).HasConversion<int>().IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasIndex(e => new { e.Status, e.RetryCount });
             entity.HasIndex(e => new { e.EmailType, e.ReferenceId });
@@ -128,7 +128,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(128);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasOne(t => t.User)
                   .WithMany(u => u.VerificationTokens)
@@ -144,7 +144,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(128);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasOne(t => t.User)
                   .WithMany(u => u.PasswordResetTokens)
@@ -161,7 +161,7 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.RecipientEmail).IsRequired().HasMaxLength(150);
             entity.Property(e => e.OutstandingAmount).HasPrecision(18, 2).IsRequired();
-            entity.Property(e => e.SentAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.Property(e => e.SentAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasOne(r => r.Fee)
                   .WithMany()

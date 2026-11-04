@@ -10,12 +10,12 @@ using StudentManagement.Api.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Add SQL Server & Entity Framework Core
+// 1. Add PostgreSQL & Entity Framework Core
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Server=localhost;Database=StudentManagementDb;Trusted_Connection=True;TrustServerCertificate=True;";
+    ?? "Host=localhost;Database=StudentManagementDb;Username=postgres;Password=postgres";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 // 2. Register Business Services (Dependency Injection)
 builder.Services.Configure<EmailOptions>(
