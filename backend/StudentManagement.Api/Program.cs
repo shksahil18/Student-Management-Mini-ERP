@@ -9,6 +9,9 @@ using StudentManagement.Api.Middleware;
 using StudentManagement.Api.Services.Implementations;
 using StudentManagement.Api.Services.Interfaces;
 
+// Enable legacy timestamp behavior for Npgsql to seamlessly handle UTC and Unspecified timestamps across PostgreSQL columns
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Add PostgreSQL & Entity Framework Core
@@ -19,7 +22,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
         // Ignore pending model changes warning to allow auto‑migration on startup
         .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
-// Note: ensure `Microsoft.EntityFrameworkCore.Diagnostics` is imported at the top.
 
 // 2. Register Business Services (Dependency Injection)
 builder.Services.Configure<EmailOptions>(

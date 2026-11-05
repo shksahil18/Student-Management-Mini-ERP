@@ -131,6 +131,13 @@ public class FeeService : IFeeService
             throw new ArgumentException("Payment amount must be strictly greater than 0.");
         }
 
+        // Verify that the user recording the payment exists
+        var user = await _context.Users.FindAsync(currentUserId);
+        if (user == null || !user.IsActive)
+        {
+            throw new UnauthorizedAccessException("Active user account was not found for this token. Please log in again.");
+        }
+
         // 1. Begin atomic database transaction
         using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -147,6 +154,11 @@ public class FeeService : IFeeService
             }
 
             // 3. Verify outstanding balance & prevent overpayment
+            if (fee.OutstandingAmount <= 0)
+            {
+                throw new InvalidOperationException("This fee record has already been fully settled/paid.");
+            }
+
             if (dto.Amount > fee.OutstandingAmount)
             {
                 throw new InvalidOperationException(
@@ -159,16 +171,25 @@ public class FeeService : IFeeService
             fee.Status = fee.OutstandingAmount == 0 ? "Paid" : "Partial";
             fee.UpdatedAt = DateTime.UtcNow;
 
-            // 5. Generate unique ReceiptNumber: REC-YYYY-XXXXXX
+            // 5. Generate collision-proof unique ReceiptNumber: REC-YYYY-XXXXXX
             var year = DateTime.UtcNow.Year;
-            var paymentCount = await _context.Payments.CountAsync();
-            var receiptNumber = $"REC-{year}-{(paymentCount + 1):D6}";
+            var baseCode = $"REC-{year}";
+            int attempt = 0;
+            string receiptNumber;
 
-            while (await _context.Payments.AnyAsync(p => p.ReceiptNumber == receiptNumber))
+            do
             {
-                paymentCount++;
-                receiptNumber = $"REC-{year}-{(paymentCount + 1):D6}";
+                var paymentCount = await _context.Payments.CountAsync();
+                receiptNumber = $"{baseCode}-{(paymentCount + 1 + attempt):D6}";
+                attempt++;
+
+                if (attempt > 5)
+                {
+                    receiptNumber = $"{baseCode}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
+                    break;
+                }
             }
+            while (await _context.Payments.AnyAsync(p => p.ReceiptNumber == receiptNumber));
 
             // 6. Create payment entity
             var payment = new Payment
@@ -177,7 +198,7 @@ public class FeeService : IFeeService
                 ReceiptNumber = receiptNumber,
                 Amount = dto.Amount,
                 PaymentDate = DateTime.UtcNow,
-                PaymentMethod = dto.PaymentMethod.Trim(),
+                PaymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "Cash" : dto.PaymentMethod.Trim(),
                 Notes = dto.Notes?.Trim(),
                 CreatedByUserId = currentUserId,
                 CreatedAt = DateTime.UtcNow
@@ -189,8 +210,6 @@ public class FeeService : IFeeService
             // 7. Commit database transaction
             await transaction.CommitAsync();
 
-            var user = await _context.Users.FindAsync(currentUserId);
-
             var receiptDto = new ReceiptDto
             {
                 ReceiptNumber = payment.ReceiptNumber,
@@ -198,11 +217,11 @@ public class FeeService : IFeeService
                 Amount = payment.Amount,
                 PaymentMethod = payment.PaymentMethod,
                 Notes = payment.Notes,
-                RecordedBy = user?.Username ?? "Staff",
-                StudentId = fee.Student.Id,
-                StudentCode = fee.Student.StudentCode,
-                StudentName = $"{fee.Student.FirstName} {fee.Student.LastName}".Trim(),
-                Course = fee.Student.Course,
+                RecordedBy = user.Username,
+                StudentId = fee.Student?.Id ?? fee.StudentId,
+                StudentCode = fee.Student?.StudentCode ?? string.Empty,
+                StudentName = fee.Student != null ? $"{fee.Student.FirstName} {fee.Student.LastName}".Trim() : "Student",
+                Course = fee.Student?.Course ?? string.Empty,
                 FeeId = fee.Id,
                 FeeTotalAmount = fee.TotalAmount,
                 FeePaidAmount = fee.PaidAmount,
@@ -213,7 +232,7 @@ public class FeeService : IFeeService
             // Queue receipt email only after successful database commit
             try
             {
-                if (!string.IsNullOrWhiteSpace(fee.Student.Email))
+                if (!string.IsNullOrWhiteSpace(fee.Student?.Email))
                 {
                     var emailMsg = _emailTemplateService.BuildFeeReceiptEmail(receiptDto, fee.Student.Email);
                     await _emailService.QueueEmailAsync(emailMsg);

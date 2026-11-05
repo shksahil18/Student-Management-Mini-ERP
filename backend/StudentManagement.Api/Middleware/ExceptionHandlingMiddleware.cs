@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using StudentManagement.Api.DTOs.Common;
 
 namespace StudentManagement.Api.Middleware;
@@ -23,7 +24,8 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred during request execution: {Message}", ex.Message);
+            _logger.LogError(ex, "An unhandled exception occurred during request execution [{TraceId}]: {Message} | Inner: {InnerMessage}",
+                context.TraceIdentifier, ex.Message, ex.InnerException?.Message);
             await HandleExceptionAsync(context, ex);
         }
     }
@@ -38,6 +40,7 @@ public class ExceptionHandlingMiddleware
             InvalidOperationException ioe => ((int)HttpStatusCode.BadRequest, ioe.Message),
             ArgumentException ae => ((int)HttpStatusCode.BadRequest, ae.Message),
             UnauthorizedAccessException uae => ((int)HttpStatusCode.Unauthorized, uae.Message),
+            DbUpdateException due => ((int)HttpStatusCode.BadRequest, due.InnerException?.Message ?? due.Message),
             _ => ((int)HttpStatusCode.InternalServerError, "An unexpected server error occurred. Please try again later.")
         };
 
