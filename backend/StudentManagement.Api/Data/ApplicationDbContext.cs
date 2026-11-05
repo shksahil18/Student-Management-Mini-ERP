@@ -52,6 +52,8 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Address).HasMaxLength(255);
             entity.Property(e => e.Course).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Gender).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.DateOfBirth).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.AdmissionDate).HasColumnType("timestamp without time zone");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -68,6 +70,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.PaidAmount).HasPrecision(18, 2).HasDefaultValue(0.00m);
             entity.Property(e => e.OutstandingAmount).HasPrecision(18, 2).IsRequired();
             entity.Property(e => e.Status).IsRequired().HasMaxLength(20).HasDefaultValue("Pending");
+            entity.Property(e => e.DueDate).HasColumnType("timestamp without time zone");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // Relationship: Student -> Fees (One-to-Many, Restrict Delete)
@@ -89,6 +92,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Amount).HasPrecision(18, 2).IsRequired();
             entity.Property(e => e.PaymentMethod).IsRequired().HasMaxLength(30);
             entity.Property(e => e.Notes).HasMaxLength(255);
+            entity.Property(e => e.PaymentDate).HasColumnType("timestamp without time zone");
             entity.Property(e => e.PaymentDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 

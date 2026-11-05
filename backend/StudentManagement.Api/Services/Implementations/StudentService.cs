@@ -154,15 +154,24 @@ public class StudentService : IStudentService
 
         // 2. Generate unique StudentCode (e.g., STU-2026-00007)
         var year = DateTime.UtcNow.Year;
-        var count = await _context.Students.CountAsync();
-        var studentCode = $"STU-{year}-{(count + 1):D5}";
+        var baseCode = $"STU-{year}";
+        int attempt = 0;
+        string studentCode;
 
-        // Ensure no collision
-        while (await _context.Students.AnyAsync(s => s.StudentCode == studentCode))
+        do
         {
-            count++;
-            studentCode = $"STU-{year}-{(count + 1):D5}";
+            var count = await _context.Students.CountAsync();
+            studentCode = $"{baseCode}-{(count + 1 + attempt):D5}";
+            attempt++;
+
+            // If we’ve tried many times, fallback to a GUID suffix to guarantee uniqueness
+            if (attempt > 5)
+            {
+                studentCode = $"{baseCode}-{Guid.NewGuid():N}";
+                break;
+            }
         }
+        while (await _context.Students.AnyAsync(s => s.StudentCode == studentCode));
 
         var student = new Student
         {

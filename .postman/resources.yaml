@@ -1,0 +1,10 @@
+workspace:
+  id: 7153d44b-9cf3-4676-8b1e-adda35809050
+localResources:
+  specs:
+    - ../response.json
+cloudResources:
+  specs:
+    ../response.json: a6598fef-8747-47d2-9d28-a9d0a6ce02ee
+  globals:
+    ../postman/globals/workspace.globals.yaml: 5c3bd019-742c-49c3-8b6e-daf078e4c39b
