@@ -34,7 +34,7 @@ public class FeesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Staff")]
     public async Task<ActionResult<ApiResponseDto<FeeDto>>> CreateFee([FromBody] CreateFeeDto dto)
     {
         if (!ModelState.IsValid)
