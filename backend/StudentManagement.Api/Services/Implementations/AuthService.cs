@@ -59,13 +59,7 @@ public class AuthService : IAuthService
         return new AuthResponseDto
         {
             Token = token,
-            User = new UserDto
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Email = user.Email,
-                Role = user.Role
-            }
+            User = MapToUserDto(user)
         };
     }
 
@@ -77,13 +71,7 @@ public class AuthService : IAuthService
             return null;
         }
 
-        return new UserDto
-        {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            Role = user.Role
-        };
+        return MapToUserDto(user);
     }
 
     public async Task<ApiResponseDto<UserDto>> RegisterAsync(RegisterRequestDto request)
@@ -138,18 +126,13 @@ public class AuthService : IAuthService
         await _context.EmailVerificationTokens.AddAsync(verificationToken);
         await _context.SaveChangesAsync();
 
-        // 5. Send Verification Email via Outbox
-        var verificationUrl = $"{_emailOptions.FrontendBaseUrl}/verify-email?token={rawToken}";
+        // 5. Send Verification Email via Outbox with immediate dispatch attempt
+        var baseUrl = !string.IsNullOrWhiteSpace(_emailOptions.FrontendBaseUrl) ? _emailOptions.FrontendBaseUrl.TrimEnd('/') : "http://localhost:5174";
+        var verificationUrl = $"{baseUrl}/verify-email?token={rawToken}";
         var emailMessage = _emailTemplateService.BuildEmailVerificationEmail(newUser.Email, newUser.Username, verificationUrl);
-        await _emailService.QueueEmailAsync(emailMessage);
+        await _emailService.QueueAndSendAsync(emailMessage);
 
-        var userDto = new UserDto
-        {
-            Id = newUser.Id,
-            Username = newUser.Username,
-            Email = newUser.Email,
-            Role = newUser.Role
-        };
+        var userDto = MapToUserDto(newUser);
 
         return ApiResponseDto<UserDto>.Ok(userDto, "Account registered successfully. A verification link has been sent to your email.");
     }
@@ -193,10 +176,11 @@ public class AuthService : IAuthService
         await _context.PasswordResetTokens.AddAsync(resetToken);
         await _context.SaveChangesAsync();
 
-        // Send Reset Email
-        var resetUrl = $"{_emailOptions.FrontendBaseUrl}/reset-password?token={rawToken}";
+        // Send Reset Email with immediate dispatch attempt + outbox retry
+        var baseUrl = !string.IsNullOrWhiteSpace(_emailOptions.FrontendBaseUrl) ? _emailOptions.FrontendBaseUrl.TrimEnd('/') : "http://localhost:5174";
+        var resetUrl = $"{baseUrl}/reset-password?token={rawToken}&email={Uri.EscapeDataString(user.Email)}";
         var emailMessage = _emailTemplateService.BuildPasswordResetEmail(user.Email, user.Username, resetUrl);
-        await _emailService.QueueEmailAsync(emailMessage);
+        await _emailService.QueueAndSendAsync(emailMessage);
 
         return ApiResponseDto<bool>.Ok(true, "If an account exists for this email, password reset instructions will be sent.");
     }
@@ -312,11 +296,34 @@ public class AuthService : IAuthService
         await _context.EmailVerificationTokens.AddAsync(verificationToken);
         await _context.SaveChangesAsync();
 
-        var verificationUrl = $"{_emailOptions.FrontendBaseUrl}/verify-email?token={rawToken}";
+        var baseUrl = !string.IsNullOrWhiteSpace(_emailOptions.FrontendBaseUrl) ? _emailOptions.FrontendBaseUrl.TrimEnd('/') : "http://localhost:5174";
+        var verificationUrl = $"{baseUrl}/verify-email?token={rawToken}";
         var emailMessage = _emailTemplateService.BuildEmailVerificationEmail(user.Email, user.Username, verificationUrl);
-        await _emailService.QueueEmailAsync(emailMessage);
+        await _emailService.QueueAndSendAsync(emailMessage);
 
         return ApiResponseDto<bool>.Ok(true, "If an unverified account exists for this email, a new verification link has been sent.");
+    }
+
+    public static UserDto MapToUserDto(Entities.User user)
+    {
+        return new UserDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            Role = user.Role,
+            FullName = user.FullName,
+            PhoneNumber = user.PhoneNumber,
+            Designation = user.Designation,
+            Department = user.Department,
+            JoiningDate = user.JoiningDate,
+            Address = user.Address,
+            ProfilePhotoUrl = user.ProfilePhotoUrl,
+            ThemePreference = user.ThemePreference ?? "system",
+            EmailNotificationsEnabled = user.EmailNotificationsEnabled,
+            IsActive = user.IsActive,
+            CreatedAt = user.CreatedAt
+        };
     }
 
     private static string GenerateSecureRandomToken()
