@@ -37,6 +37,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IFeeService, FeeService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IStaffService, StaffService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 
 // 3. Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -129,6 +131,7 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 // 6. Global Exception Handling Middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
