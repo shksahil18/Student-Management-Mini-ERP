@@ -36,6 +36,15 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.IsEmailVerified).HasDefaultValue(true);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.FullName).HasMaxLength(100);
+            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+            entity.Property(e => e.Designation).HasMaxLength(100);
+            entity.Property(e => e.Department).HasMaxLength(100);
+            entity.Property(e => e.JoiningDate).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.Address).HasMaxLength(255);
+            entity.Property(e => e.ProfilePhotoUrl).HasMaxLength(1000);
+            entity.Property(e => e.ThemePreference).HasMaxLength(20).HasDefaultValue("system");
+            entity.Property(e => e.EmailNotificationsEnabled).HasDefaultValue(true);
         });
 
         // 2. Student Configuration
