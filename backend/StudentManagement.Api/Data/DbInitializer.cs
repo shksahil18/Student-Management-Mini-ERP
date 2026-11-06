@@ -100,7 +100,7 @@ public static class DbInitializer
         await context.Database.ExecuteSqlRawAsync(createTablesSql);
         }
 
-        // 1. Seed or Update Users with fresh BCrypt hashes
+        // 1. Seed or Update Users with fresh BCrypt hashes and Staff profiles
         var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Username == "admin");
         if (adminUser == null)
         {
@@ -110,10 +110,27 @@ public static class DbInitializer
                 Email = "admin@erp.local",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
                 Role = "Admin",
+                FullName = "System Administrator",
+                Designation = "Chief Administrator",
+                Department = "Administration",
+                PhoneNumber = "+91 9800000001",
+                JoiningDate = new DateTime(2025, 1, 1),
+                Address = "Campus Admin Block, Office 101",
+                ThemePreference = "system",
+                EmailNotificationsEnabled = true,
                 IsActive = true,
+                IsEmailVerified = true,
                 CreatedAt = DateTime.UtcNow
             };
             await context.Users.AddAsync(adminUser);
+        }
+        else
+        {
+            adminUser.FullName ??= "System Administrator";
+            adminUser.Designation ??= "Chief Administrator";
+            adminUser.Department ??= "Administration";
+            adminUser.PhoneNumber ??= "+91 9800000001";
+            adminUser.JoiningDate ??= new DateTime(2025, 1, 1);
         }
 
         var staffUser = await context.Users.FirstOrDefaultAsync(u => u.Username == "staff");
@@ -125,10 +142,75 @@ public static class DbInitializer
                 Email = "staff@erp.local",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Staff@123"),
                 Role = "Staff",
+                FullName = "Admissions Staff",
+                Designation = "Admissions Officer",
+                Department = "Admissions",
+                PhoneNumber = "+91 9800000002",
+                JoiningDate = new DateTime(2025, 6, 1),
+                Address = "Student Services Hall, Counter 3",
+                ThemePreference = "system",
+                EmailNotificationsEnabled = true,
                 IsActive = true,
+                IsEmailVerified = true,
                 CreatedAt = DateTime.UtcNow
             };
             await context.Users.AddAsync(staffUser);
+        }
+        else
+        {
+            staffUser.FullName ??= "Admissions Staff";
+            staffUser.Designation ??= "Admissions Officer";
+            staffUser.Department ??= "Admissions";
+            staffUser.PhoneNumber ??= "+91 9800000002";
+            staffUser.JoiningDate ??= new DateTime(2025, 6, 1);
+        }
+
+        var financeStaff = await context.Users.FirstOrDefaultAsync(u => u.Username == "finance");
+        if (financeStaff == null)
+        {
+            financeStaff = new User
+            {
+                Username = "finance",
+                Email = "finance@erp.local",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Finance@123"),
+                Role = "Staff",
+                FullName = "Rajesh Kumar",
+                Designation = "Senior Accountant",
+                Department = "Finance",
+                PhoneNumber = "+91 9800000003",
+                JoiningDate = new DateTime(2025, 8, 15),
+                Address = "Finance & Accounts Wing, Room 204",
+                ThemePreference = "system",
+                EmailNotificationsEnabled = true,
+                IsActive = true,
+                IsEmailVerified = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            await context.Users.AddAsync(financeStaff);
+        }
+
+        var academicStaff = await context.Users.FirstOrDefaultAsync(u => u.Username == "registrar");
+        if (academicStaff == null)
+        {
+            academicStaff = new User
+            {
+                Username = "registrar",
+                Email = "registrar@erp.local",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Registrar@123"),
+                Role = "Staff",
+                FullName = "Meera Nair",
+                Designation = "Academic Registrar",
+                Department = "Academics",
+                PhoneNumber = "+91 9800000004",
+                JoiningDate = new DateTime(2025, 9, 1),
+                Address = "Dean Office, Academic Wing",
+                ThemePreference = "system",
+                EmailNotificationsEnabled = true,
+                IsActive = true,
+                IsEmailVerified = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            await context.Users.AddAsync(academicStaff);
         }
 
         await context.SaveChangesAsync();
