@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, CreditCard, UserPlus } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, UserPlus, UserCheck, Settings, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const Sidebar = () => {
@@ -42,12 +42,36 @@ export const Sidebar = () => {
           <CreditCard size={20} />
           <span>Fee Management</span>
         </NavLink>
+
+        <NavLink
+          to="/staff"
+          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+        >
+          <UserCheck size={20} />
+          <span>Staff Members</span>
+        </NavLink>
+
+        <NavLink
+          to="/profile"
+          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+        >
+          <User size={20} />
+          <span>My Profile</span>
+        </NavLink>
+
+        <NavLink
+          to="/settings"
+          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+        >
+          <Settings size={20} />
+          <span>Settings</span>
+        </NavLink>
       </nav>
 
       <div className="sidebar-footer">
         <div className="system-pill">
           <span className="status-dot"></span>
-          <span>SQL Server Active</span>
+          <span>Enterprise ERP Active</span>
         </div>
       </div>
     </aside>
