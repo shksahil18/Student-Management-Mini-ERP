@@ -279,7 +279,7 @@ If you did not request this, please disregard this email.";
             HtmlBody = WrapHtmlLayout("Email Verification", "Account Security", html),
             PlainTextBody = plainText,
             EmailType = "EmailVerification",
-            ReferenceId = username
+            ReferenceId = $"VERIFY-{username}-{Guid.NewGuid():N}"
         };
     }
 
@@ -314,7 +314,7 @@ If you did not request this, no action is needed.";
             HtmlBody = WrapHtmlLayout("Password Reset Request", "Security Verification", html),
             PlainTextBody = plainText,
             EmailType = "PasswordReset",
-            ReferenceId = username
+            ReferenceId = $"RESET-{username}-{Guid.NewGuid():N}"
         };
     }
 }
