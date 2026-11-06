@@ -308,7 +308,7 @@ a {
 /* ---------------- KPI Metric Cards ---------------- */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(225px, 1fr));
   gap: 18px;
   margin-bottom: 28px;
 }
@@ -1456,3 +1456,185 @@ a {
     padding: 20px 16px;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Dark Mode & Theming System (Comprehensive Variable Overrides)
+   -------------------------------------------------------------------------- */
+:root[data-theme="dark"],
+.dark-theme {
+  --primary: #9d65ff;
+  --primary-hover: #b48aff;
+  --primary-light: #26164d;
+  --bg-main: #0b0f19;
+  --bg-surface: #131b2e;
+  --border: #1e293b;
+  --border-focus: #9d65ff;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
+}
+
+.dark-theme body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+.dark-theme .erp-navbar,
+.dark-theme .erp-sidebar,
+.dark-theme .panel-card,
+.dark-theme .modal-container,
+.dark-theme .stat-card {
+  background-color: var(--bg-surface);
+  border-color: var(--border);
+}
+
+.dark-theme .sidebar-link {
+  color: var(--text-muted);
+}
+
+.dark-theme .sidebar-link:hover,
+.dark-theme .sidebar-link.active {
+  background-color: var(--primary-light);
+  color: #ffffff;
+}
+
+.dark-theme .form-control,
+.dark-theme .form-select,
+.dark-theme input[type="text"],
+.dark-theme input[type="email"],
+.dark-theme input[type="password"],
+.dark-theme input[type="date"],
+.dark-theme input[type="number"],
+.dark-theme select,
+.dark-theme textarea {
+  background-color: #0d1322 !important;
+  border-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+.dark-theme .form-control:focus,
+.dark-theme .form-select:focus,
+.dark-theme select:focus,
+.dark-theme input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(157, 101, 255, 0.25) !important;
+}
+
+.dark-theme .data-table th {
+  background-color: #0d1322;
+  color: var(--text-muted);
+  border-bottom-color: var(--border);
+}
+
+.dark-theme .data-table td {
+  border-bottom-color: var(--border);
+  color: var(--text-main);
+}
+
+.dark-theme .data-table tr:hover td {
+  background-color: #182238;
+}
+
+.dark-theme .user-avatar,
+.dark-theme .quick-theme-btn {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+.dark-theme .btn-secondary,
+.dark-theme .btn-filter,
+.dark-theme .pagination-btn {
+  background-color: #182238;
+  border-color: #1e293b;
+  color: var(--text-main);
+}
+
+.dark-theme .btn-secondary:hover,
+.dark-theme .pagination-btn:hover:not(:disabled) {
+  background-color: #233150;
+  border-color: #334155;
+}
+
+.dark-theme .known-auth-split-card {
+  background-color: var(--bg-surface);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+.dark-theme .known-form-panel {
+  background-color: var(--bg-surface);
+}
+
+.dark-theme .font-semibold {
+  color: var(--primary-hover);
+}
+
+/* Quick Theme Toggle Icon Button in Navbar */
+.quick-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background-color: var(--bg-surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-theme-btn:hover {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Staff & Profile Avatar Pill */
+.staff-avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.staff-avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-large {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 32px;
+  border: 3px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
