@@ -15,6 +15,9 @@ import { StudentCreate } from './pages/Students/StudentCreate';
 import { StudentEdit } from './pages/Students/StudentEdit';
 import { StudentDetail } from './pages/Students/StudentDetail';
 import { FeeList } from './pages/Fees/FeeList';
+import { StaffList } from './pages/Staff/StaffList';
+import { Settings } from './pages/Settings';
+import { Profile } from './pages/Profile';
 
 export const App = () => {
   return (
@@ -56,6 +59,9 @@ export const App = () => {
               }
             />
             <Route path="/fees" element={<FeeList />} />
+            <Route path="/staff" element={<StaffList />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
