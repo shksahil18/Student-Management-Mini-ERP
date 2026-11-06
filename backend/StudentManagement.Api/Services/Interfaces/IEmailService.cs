@@ -15,6 +15,7 @@ public interface IEmailService
 {
     Task<bool> SendEmailDirectAsync(EmailMessageDto message, CancellationToken cancellationToken = default);
     Task QueueEmailAsync(EmailMessageDto message, CancellationToken cancellationToken = default);
+    Task<bool> QueueAndSendAsync(EmailMessageDto message, CancellationToken cancellationToken = default);
     Task ProcessPendingOutboxAsync(int batchSize = 10, CancellationToken cancellationToken = default);
 }
 
