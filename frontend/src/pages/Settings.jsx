@@ -3,13 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { profileApi } from '../api/profileApi';
 import {
-  Settings as SettingsIcon,
   Moon,
   Sun,
   Monitor,
   Bell,
   Mail,
-  Shield,
   KeyRound,
   CheckCircle,
   AlertCircle,
@@ -120,33 +118,33 @@ export const Settings = () => {
   };
 
   return (
-    <div className="erp-page">
+    <div className="student-list-page">
       <div className="page-header">
         <div>
           <h1 className="page-title">Application Settings</h1>
-          <p className="page-subtitle">Configure theme preferences, institutional notifications, and account credentials</p>
+          <p className="page-description">Configure theme preferences, institutional notifications, and account credentials</p>
         </div>
       </div>
 
       {successMsg && (
-        <div className="alert alert-success" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="alert-success" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 16px', borderRadius: 'var(--radius-sm)', backgroundColor: '#dcfce7', color: '#15803d' }}>
           <CheckCircle size={18} />
           <span>{successMsg}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="alert alert-danger" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="alert-error" style={{ marginBottom: '20px' }}>
           <AlertCircle size={18} />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
         {/* Card 1: Theme & Appearance */}
-        <div className="panel-card">
+        <div className="panel-card" style={{ padding: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <div className="known-feature-icon-bubble" style={{ width: '36px', height: '36px' }}>
+            <div className="btn-action btn-view" style={{ width: '36px', height: '36px' }}>
               <Sun size={18} />
             </div>
             <div>
@@ -166,7 +164,7 @@ export const Settings = () => {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '12px 16px',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-sm)',
                 border: '1px solid var(--border)',
                 cursor: 'pointer',
                 backgroundColor: themePreference === 'light' ? 'var(--primary-light)' : 'transparent',
@@ -194,7 +192,7 @@ export const Settings = () => {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '12px 16px',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-sm)',
                 border: '1px solid var(--border)',
                 cursor: 'pointer',
                 backgroundColor: themePreference === 'dark' ? 'var(--primary-light)' : 'transparent',
@@ -222,7 +220,7 @@ export const Settings = () => {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '12px 16px',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-sm)',
                 border: '1px solid var(--border)',
                 cursor: 'pointer',
                 backgroundColor: themePreference === 'system' ? 'var(--primary-light)' : 'transparent',
@@ -247,9 +245,9 @@ export const Settings = () => {
         </div>
 
         {/* Card 2: Notifications & Profile Shortcut */}
-        <div className="panel-card">
+        <div className="panel-card" style={{ padding: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <div className="known-feature-icon-bubble" style={{ width: '36px', height: '36px' }}>
+            <div className="btn-action btn-view" style={{ width: '36px', height: '36px' }}>
               <Bell size={18} />
             </div>
             <div>
@@ -265,7 +263,7 @@ export const Settings = () => {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '14px',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-sm)',
                 border: '1px solid var(--border)',
                 marginBottom: '16px',
               }}
@@ -291,7 +289,7 @@ export const Settings = () => {
             <div
               style={{
                 padding: '16px',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-sm)',
                 backgroundColor: 'var(--bg-main)',
                 border: '1px solid var(--border)',
               }}
@@ -303,7 +301,7 @@ export const Settings = () => {
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px' }}>
                 Manage your institutional designation, phone number, physical address, and avatar image.
               </p>
-              <Link to="/profile" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Link to="/profile" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <span>Edit Profile</span>
                 <ExternalLink size={14} />
               </Link>
@@ -312,9 +310,9 @@ export const Settings = () => {
         </div>
 
         {/* Card 3: Security & Password */}
-        <div className="panel-card" style={{ gridColumn: '1 / -1' }}>
+        <div className="panel-card" style={{ gridColumn: '1 / -1', padding: '24px 28px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <div className="known-feature-icon-bubble" style={{ width: '36px', height: '36px' }}>
+            <div className="btn-action btn-view" style={{ width: '36px', height: '36px' }}>
               <KeyRound size={18} />
             </div>
             <div>
@@ -324,25 +322,24 @@ export const Settings = () => {
           </div>
 
           {pwdSuccess && (
-            <div className="alert alert-success" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="alert-success" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 16px', borderRadius: 'var(--radius-sm)', backgroundColor: '#dcfce7', color: '#15803d' }}>
               <CheckCircle size={18} />
               <span>{pwdSuccess}</span>
             </div>
           )}
 
           {pwdError && (
-            <div className="alert alert-danger" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="alert-error" style={{ marginBottom: '16px' }}>
               <AlertCircle size={18} />
               <span>{pwdError}</span>
             </div>
           )}
 
-          <form onSubmit={handlePasswordChange} style={{ maxWidth: '540px' }}>
-            <div className="form-group" style={{ marginBottom: '14px' }}>
-              <label className="form-label">Current Password</label>
+          <form onSubmit={handlePasswordChange} className="erp-form" style={{ maxWidth: '540px' }}>
+            <div className="form-group">
+              <label>Current Password</label>
               <input
                 type="password"
-                className="form-control"
                 placeholder="Enter current password"
                 value={passwordData.currentPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
@@ -350,12 +347,11 @@ export const Settings = () => {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
+            <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label">New Password</label>
+                <label>New Password</label>
                 <input
                   type="password"
-                  className="form-control"
                   placeholder="Min 6 characters"
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
@@ -364,10 +360,9 @@ export const Settings = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Confirm New Password</label>
+                <label>Confirm New Password</label>
                 <input
                   type="password"
-                  className="form-control"
                   placeholder="Repeat new password"
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
@@ -376,9 +371,11 @@ export const Settings = () => {
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary" disabled={pwdSubmitting}>
-              {pwdSubmitting ? 'Updating Password...' : 'Update Password'}
-            </button>
+            <div className="form-actions" style={{ justifyContent: 'flex-start', borderTop: 'none', paddingLeft: 0 }}>
+              <button type="submit" className="btn-primary" disabled={pwdSubmitting}>
+                {pwdSubmitting ? 'Updating Password...' : 'Update Password'}
+              </button>
+            </div>
           </form>
         </div>
       </div>

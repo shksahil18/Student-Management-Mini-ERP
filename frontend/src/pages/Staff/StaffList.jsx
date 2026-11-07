@@ -2,22 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { staffApi } from '../../api/staffApi';
 import { useAuth } from '../../context/AuthContext';
 import { Badge } from '../../components/common/Badge';
+import { Pagination } from '../../components/common/Pagination';
 import { Modal } from '../../components/common/Modal';
 import {
-  UserCheck,
   UserPlus,
   Search,
   Filter,
   Eye,
-  Edit2,
+  Edit,
   Power,
-  Mail,
-  Phone,
-  Building2,
-  Calendar,
-  ShieldCheck,
   AlertCircle,
-  CheckCircle,
 } from 'lucide-react';
 
 export const StaffList = () => {
@@ -26,21 +20,22 @@ export const StaffList = () => {
   const [staffList, setStaffList] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Filter & Search states
   const [search, setSearch] = useState('');
   const [department, setDepartment] = useState('');
   const [isActiveFilter, setIsActiveFilter] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 6;
 
   // Modals state
   const [viewStaff, setViewStaff] = useState(null);
   const [editStaff, setEditStaff] = useState(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [notification, setNotification] = useState({ type: '', message: '' });
+  const [actionLoading, setActionLoading] = useState(null);
+  const [error, setError] = useState('');
 
   // Form state for Create
   const [createForm, setCreateForm] = useState({
@@ -86,24 +81,26 @@ export const StaffList = () => {
     }
   };
 
-  const loadStaff = async () => {
+  const loadStaff = async (customSearch = search) => {
     try {
       setLoading(true);
+      setError('');
       const params = {
         pageNumber: page,
         pageSize,
-        search: search.trim() || undefined,
+        search: customSearch ? customSearch.trim() : undefined,
         department: department || undefined,
         isActive: isActiveFilter === '' ? undefined : isActiveFilter === 'true',
       };
       const res = await staffApi.getStaff(params);
       if (res.success && res.data) {
         setStaffList(res.data.items || []);
-        setTotalCount(res.data.totalCount || 0);
+        setTotalItems(res.data.totalCount || 0);
+        setTotalPages(res.data.totalPages || 1);
       }
     } catch (e) {
       console.error('Failed to load staff list', e);
-      setNotification({ type: 'error', message: 'Failed to retrieve staff directory.' });
+      setError('Failed to retrieve staff directory.');
     } finally {
       setLoading(false);
     }
@@ -112,22 +109,27 @@ export const StaffList = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPage(1);
-    loadStaff();
+    loadStaff(search);
   };
 
   const handleToggleStatus = async (staff) => {
     if (!isAdmin) return;
+    const confirmMsg = staff.isActive
+      ? 'Are you sure you want to deactivate this staff member?'
+      : 'Are you sure you want to reactivate this staff member?';
+
+    if (!window.confirm(confirmMsg)) return;
+
     try {
+      setActionLoading(staff.id);
       const res = await staffApi.toggleStatus(staff.id);
       if (res.success) {
-        setNotification({
-          type: 'success',
-          message: `Staff member ${staff.fullName || staff.username} has been ${res.data ? 'activated' : 'deactivated'}.`,
-        });
         loadStaff();
       }
     } catch (e) {
-      setNotification({ type: 'error', message: 'Failed to toggle account status.' });
+      alert('Failed to update staff status');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -151,25 +153,24 @@ export const StaffList = () => {
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     if (createForm.password !== createForm.confirmPassword) {
-      setNotification({ type: 'error', message: 'Initial password and confirmation do not match.' });
+      alert('Initial password and confirmation do not match.');
       return;
     }
 
     try {
-      setActionLoading(true);
+      setActionLoading('create');
       const res = await staffApi.createStaff(createForm);
       if (res.success) {
         setIsCreateOpen(false);
-        setNotification({ type: 'success', message: 'New staff member registered successfully!' });
         loadStaff();
         loadDepartments();
       } else {
-        setNotification({ type: 'error', message: res.message || 'Failed to create staff member.' });
+        alert(res.message || 'Failed to create staff member.');
       }
     } catch (e) {
-      setNotification({ type: 'error', message: e.response?.data?.message || 'Error creating staff member.' });
+      alert(e.response?.data?.message || 'Error creating staff member.');
     } finally {
-      setActionLoading(false);
+      setActionLoading(null);
     }
   };
 
@@ -188,19 +189,18 @@ export const StaffList = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      setActionLoading(true);
+      setActionLoading(editStaff.id);
       const res = await staffApi.updateStaff(editStaff.id, editForm);
       if (res.success) {
         setEditStaff(null);
-        setNotification({ type: 'success', message: 'Staff member updated successfully!' });
         loadStaff();
       } else {
-        setNotification({ type: 'error', message: res.message || 'Failed to update staff member.' });
+        alert(res.message || 'Failed to update staff member.');
       }
     } catch (e) {
-      setNotification({ type: 'error', message: e.response?.data?.message || 'Error updating staff member.' });
+      alert(e.response?.data?.message || 'Error updating staff member.');
     } finally {
-      setActionLoading(false);
+      setActionLoading(null);
     }
   };
 
@@ -212,53 +212,44 @@ export const StaffList = () => {
   };
 
   return (
-    <div className="erp-page">
+    <div className="student-list-page">
       <div className="page-header">
         <div>
           <h1 className="page-title">Staff Members</h1>
-          <p className="page-subtitle">Directory of academic registrars, administrative staff, and ERP operators</p>
+          <p className="page-description">Directory of academic registrars, administrative staff, and ERP operators</p>
         </div>
 
         {isAdmin && (
-          <button onClick={openCreateModal} className="btn btn-primary">
-            <UserPlus size={18} />
-            <span>Add Staff Member</span>
-          </button>
+          <div className="header-actions">
+            <button onClick={openCreateModal} className="btn-primary">
+              <UserPlus size={16} />
+              <span>Add Staff Member</span>
+            </button>
+          </div>
         )}
       </div>
 
-      {notification.message && (
-        <div
-          className={`alert ${notification.type === 'error' ? 'alert-danger' : 'alert-success'}`}
-          style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          {notification.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle size={18} />}
-          <span>{notification.message}</span>
-        </div>
-      )}
-
-      {/* Filter and Search Bar */}
-      <div className="panel-card" style={{ marginBottom: '24px' }}>
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end' }}>
-          <div style={{ flex: '1 1 240px' }}>
-            <label className="form-label">Search Staff</label>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Search by name, email, or designation..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{ paddingLeft: '36px' }}
-              />
-              <Search size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-dim)' }} />
-            </div>
+      {/* Search and Filters Bar */}
+      <div className="filter-card">
+        <form onSubmit={handleSearchSubmit} className="search-form">
+          <div className="search-input-wrapper">
+            <Search size={18} className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by code, name, or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
+          <button type="submit" className="btn-secondary">
+            Search
+          </button>
+        </form>
 
-          <div style={{ width: '180px' }}>
-            <label className="form-label">Department</label>
+        <div className="filter-controls">
+          <div className="filter-group">
+            <Filter size={16} className="filter-icon" />
             <select
-              className="form-select"
               value={department}
               onChange={(e) => {
                 setDepartment(e.target.value);
@@ -274,10 +265,8 @@ export const StaffList = () => {
             </select>
           </div>
 
-          <div style={{ width: '150px' }}>
-            <label className="form-label">Status</label>
+          <div className="filter-group">
             <select
-              className="form-select"
               value={isActiveFilter}
               onChange={(e) => {
                 setIsActiveFilter(e.target.value);
@@ -290,114 +279,124 @@ export const StaffList = () => {
             </select>
           </div>
 
-          <button type="submit" className="btn btn-secondary" style={{ height: '42px' }}>
-            <Filter size={16} />
-            <span>Filter</span>
-          </button>
-        </form>
+          {(search || department || isActiveFilter) && (
+            <button
+              className="btn-ghost"
+              onClick={() => {
+                setSearch('');
+                setDepartment('');
+                setIsActiveFilter('');
+                setPage(1);
+                loadStaff('');
+              }}
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
       </div>
 
+      {error && (
+        <div className="alert-error">
+          <AlertCircle size={18} />
+          <span>{error}</span>
+        </div>
+      )}
+
       {/* Staff Table */}
-      <div className="panel-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="data-table">
+      <div className="panel-card table-panel">
+        <div className="table-wrapper">
+          <table className="erp-table">
             <thead>
               <tr>
-                <th>Staff Member</th>
-                <th>Staff ID</th>
+                <th>Code</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Phone</th>
                 <th>Department</th>
-                <th>Designation</th>
-                <th>Joining Date</th>
                 <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="text-center" style={{ padding: '40px' }}>
-                    <div className="spinner"></div>
-                    <p style={{ marginTop: '10px', color: 'var(--text-muted)' }}>Loading staff records...</p>
+                  <td colSpan="7" className="text-center py-8">
+                    <div className="inline-spinner"></div> Loading staff records...
                   </td>
                 </tr>
-              ) : staffList.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="text-center" style={{ padding: '40px', color: 'var(--text-muted)' }}>
-                    No staff members match the current filter criteria.
-                  </td>
-                </tr>
-              ) : (
+              ) : staffList.length > 0 ? (
                 staffList.map((staff) => (
-                  <tr key={staff.id}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div className="staff-avatar-circle">
-                          {staff.profilePhotoUrl ? (
-                            <img src={getFullPhotoUrl(staff.profilePhotoUrl)} alt={staff.fullName || staff.username} />
-                          ) : (
-                            <span>{(staff.fullName || staff.username).charAt(0).toUpperCase()}</span>
-                          )}
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>
-                            {staff.fullName || staff.username}
-                          </div>
-                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{staff.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="font-mono" style={{ fontWeight: '600' }}>
-                        {staff.staffId}
+                  <tr key={staff.id} className={!staff.isActive ? 'row-inactive' : ''}>
+                    <td className="font-mono font-bold text-indigo">{staff.staffId}</td>
+                    <td className="font-semibold">
+                      <span
+                        onClick={() => setViewStaff(staff)}
+                        className="hover-link"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {staff.fullName || staff.username}
                       </span>
                     </td>
-                    <td>{staff.department || '—'}</td>
-                    <td>{staff.designation || 'Staff'}</td>
+                    <td>{staff.email}</td>
+                    <td>{staff.phoneNumber || '—'}</td>
                     <td>
-                      {staff.joiningDate ? new Date(staff.joiningDate).toLocaleDateString() : '—'}
+                      <span className="course-pill">{staff.department || 'General'}</span>
                     </td>
                     <td>
-                      <Badge variant={staff.isActive ? 'success' : 'danger'}>
-                        {staff.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <Badge status={staff.isActive} />
                     </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '8px' }}>
-                        <button
-                          onClick={() => setViewStaff(staff)}
-                          className="btn-icon"
-                          title="View Details"
-                        >
-                          <Eye size={16} />
-                        </button>
+                    <td className="text-right table-actions">
+                      <button
+                        onClick={() => setViewStaff(staff)}
+                        className="btn-action btn-view"
+                        title="View Details"
+                      >
+                        <Eye size={16} />
+                      </button>
 
-                        {isAdmin && (
-                          <>
-                            <button
-                              onClick={() => openEditModal(staff)}
-                              className="btn-icon"
-                              title="Edit Staff Member"
-                            >
-                              <Edit2 size={16} />
-                            </button>
+                      {isAdmin && (
+                        <>
+                          <button
+                            onClick={() => openEditModal(staff)}
+                            className="btn-action btn-edit"
+                            title="Edit Staff Member"
+                          >
+                            <Edit size={16} />
+                          </button>
 
-                            <button
-                              onClick={() => handleToggleStatus(staff)}
-                              className="btn-icon"
-                              title={staff.isActive ? 'Deactivate' : 'Activate'}
-                              style={{ color: staff.isActive ? '#ef4444' : '#10b981' }}
-                            >
-                              <Power size={16} />
-                            </button>
-                          </>
-                        )}
-                      </div>
+                          <button
+                            onClick={() => handleToggleStatus(staff)}
+                            className={`btn-action ${staff.isActive ? 'btn-deactivate' : 'btn-activate'}`}
+                            title={staff.isActive ? 'Deactivate Staff Member' : 'Activate Staff Member'}
+                            disabled={actionLoading === staff.id}
+                          >
+                            <Power size={16} />
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="text-center py-8 text-muted">
+                    No staff members match the current filters.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Server Pagination */}
+        <div className="panel-footer">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            onPageChange={(newPage) => setPage(newPage)}
+          />
         </div>
       </div>
 
@@ -441,10 +440,8 @@ export const StaffList = () => {
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Account Status</span>
-              <p>
-                <Badge variant={viewStaff.isActive ? 'success' : 'danger'}>
-                  {viewStaff.isActive ? 'Active' : 'Inactive'}
-                </Badge>
+              <p style={{ marginTop: '4px' }}>
+                <Badge status={viewStaff.isActive} />
               </p>
             </div>
           </div>
@@ -460,24 +457,22 @@ export const StaffList = () => {
       {/* Edit Staff Modal */}
       {editStaff && (
         <Modal isOpen={!!editStaff} onClose={() => setEditStaff(null)} title={`Edit Staff: ${editStaff.fullName || editStaff.username}`}>
-          <form onSubmit={handleEditSubmit}>
-            <div className="form-group" style={{ marginBottom: '14px' }}>
-              <label className="form-label">Full Name</label>
+          <form onSubmit={handleEditSubmit} className="erp-form">
+            <div className="form-group">
+              <label>Full Name <span className="req">*</span></label>
               <input
                 type="text"
-                className="form-control"
                 value={editForm.fullName}
                 onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
                 required
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+            <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label">Department</label>
+                <label>Department <span className="req">*</span></label>
                 <input
                   type="text"
-                  className="form-control"
                   value={editForm.department}
                   onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
                   required
@@ -485,10 +480,9 @@ export const StaffList = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Designation</label>
+                <label>Designation <span className="req">*</span></label>
                 <input
                   type="text"
-                  className="form-control"
                   value={editForm.designation}
                   onChange={(e) => setEditForm({ ...editForm, designation: e.target.value })}
                   required
@@ -496,21 +490,19 @@ export const StaffList = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+            <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label">Phone Number</label>
+                <label>Phone Number</label>
                 <input
                   type="text"
-                  className="form-control"
                   value={editForm.phoneNumber}
                   onChange={(e) => setEditForm({ ...editForm, phoneNumber: e.target.value })}
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Active Status</label>
+                <label>Account Status</label>
                 <select
-                  className="form-select"
                   value={editForm.isActive ? 'true' : 'false'}
                   onChange={(e) => setEditForm({ ...editForm, isActive: e.target.value === 'true' })}
                 >
@@ -520,22 +512,21 @@ export const StaffList = () => {
               </div>
             </div>
 
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <label className="form-label">Office / Address</label>
-              <textarea
-                className="form-control"
-                rows="2"
+            <div className="form-group">
+              <label>Office / Campus Address</label>
+              <input
+                type="text"
                 value={editForm.address}
                 onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button type="button" onClick={() => setEditStaff(null)} className="btn btn-secondary">
+            <div className="form-actions">
+              <button type="button" onClick={() => setEditStaff(null)} className="btn-secondary">
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary" disabled={actionLoading}>
-                {actionLoading ? 'Saving...' : 'Save Changes'}
+              <button type="submit" className="btn-primary" disabled={actionLoading === editStaff.id}>
+                {actionLoading === editStaff.id ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </form>
@@ -545,13 +536,12 @@ export const StaffList = () => {
       {/* Add Staff Modal */}
       {isCreateOpen && (
         <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Register New Staff Member">
-          <form onSubmit={handleCreateSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+          <form onSubmit={handleCreateSubmit} className="erp-form">
+            <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label">Full Name</label>
+                <label>Full Name <span className="req">*</span></label>
                 <input
                   type="text"
-                  className="form-control"
                   placeholder="e.g. Dr. Alan Grant"
                   value={createForm.fullName}
                   onChange={(e) => setCreateForm({ ...createForm, fullName: e.target.value })}
@@ -560,10 +550,9 @@ export const StaffList = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Username</label>
+                <label>Username <span className="req">*</span></label>
                 <input
                   type="text"
-                  className="form-control"
                   placeholder="e.g. alan.grant"
                   value={createForm.username}
                   onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
@@ -572,12 +561,11 @@ export const StaffList = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+            <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label">Institutional Email</label>
+                <label>Institutional Email <span className="req">*</span></label>
                 <input
                   type="email"
-                  className="form-control"
                   placeholder="alan@institution.edu"
                   value={createForm.email}
                   onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
@@ -586,10 +574,9 @@ export const StaffList = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Phone Number</label>
+                <label>Phone Number</label>
                 <input
                   type="text"
-                  className="form-control"
                   placeholder="+1 (555) 234-5678"
                   value={createForm.phoneNumber}
                   onChange={(e) => setCreateForm({ ...createForm, phoneNumber: e.target.value })}
@@ -597,12 +584,11 @@ export const StaffList = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+            <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label">Department</label>
+                <label>Department <span className="req">*</span></label>
                 <input
                   type="text"
-                  className="form-control"
                   placeholder="e.g. Finance, Admissions"
                   value={createForm.department}
                   onChange={(e) => setCreateForm({ ...createForm, department: e.target.value })}
@@ -611,10 +597,9 @@ export const StaffList = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Designation</label>
+                <label>Designation <span className="req">*</span></label>
                 <input
                   type="text"
-                  className="form-control"
                   placeholder="e.g. Admissions Officer"
                   value={createForm.designation}
                   onChange={(e) => setCreateForm({ ...createForm, designation: e.target.value })}
@@ -623,12 +608,11 @@ export const StaffList = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+            <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label">Initial Password</label>
+                <label>Initial Password <span className="req">*</span></label>
                 <input
                   type="password"
-                  className="form-control"
                   placeholder="Min 6 characters"
                   value={createForm.password}
                   onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
@@ -637,10 +621,9 @@ export const StaffList = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Confirm Password</label>
+                <label>Confirm Password <span className="req">*</span></label>
                 <input
                   type="password"
-                  className="form-control"
                   placeholder="Confirm password"
                   value={createForm.confirmPassword}
                   onChange={(e) => setCreateForm({ ...createForm, confirmPassword: e.target.value })}
@@ -649,12 +632,12 @@ export const StaffList = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '20px' }}>
-              <button type="button" onClick={() => setIsCreateOpen(false)} className="btn btn-secondary">
+            <div className="form-actions">
+              <button type="button" onClick={() => setIsCreateOpen(false)} className="btn-secondary">
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary" disabled={actionLoading}>
-                {actionLoading ? 'Creating Staff...' : 'Create Staff Member'}
+              <button type="submit" className="btn-primary" disabled={actionLoading === 'create'}>
+                {actionLoading === 'create' ? 'Creating Staff...' : 'Create Staff Member'}
               </button>
             </div>
           </form>

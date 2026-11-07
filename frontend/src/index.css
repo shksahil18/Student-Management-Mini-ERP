@@ -264,9 +264,14 @@ a {
     border-radius: var(--radius-lg);
     overflow: hidden;
     outline: none;
-    border-color: #33006F;
-    border-image: linear-gradient(90deg, #33006F 0%, #E6E6FA);
-    box-shadow: -5px 5px 15px rgba(51, 0, 111, 0.25), 5px 5px 15px rgba(230, 230, 250, 0.6);
+    border-color: #33006f;
+    border-image: linear-gradient(90deg,#33006f,#e6e6fa);
+    box-shadow: -5px 5px 15px #33006f40,5px 5px 15px #e6e6fa99;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
 }
 
 .panel-header {

@@ -2,19 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { profileApi } from '../api/profileApi';
 import {
-  User,
   Mail,
-  Phone,
   Briefcase,
   Building2,
   Calendar,
-  MapPin,
   Camera,
   Trash2,
   ShieldCheck,
-  CheckCircle,
   AlertCircle,
-  Upload,
+  CheckCircle,
 } from 'lucide-react';
 
 export const Profile = () => {
@@ -161,41 +157,40 @@ export const Profile = () => {
 
   if (loading) {
     return (
-      <div className="erp-page">
-        <div className="text-center" style={{ padding: '60px 0' }}>
-          <div className="spinner"></div>
-          <p style={{ marginTop: '12px', color: 'var(--text-muted)' }}>Loading profile information...</p>
+      <div className="student-list-page">
+        <div className="text-center py-8">
+          <div className="inline-spinner"></div> Loading profile information...
         </div>
       </div>
     );
   }
 
   return (
-    <div className="erp-page">
+    <div className="student-list-page">
       <div className="page-header">
         <div>
           <h1 className="page-title">User Profile</h1>
-          <p className="page-subtitle">Manage your personal credentials, identity photo, and departmental details</p>
+          <p className="page-description">Manage your personal credentials, identity photo, and departmental details</p>
         </div>
       </div>
 
       {successMsg && (
-        <div className="alert alert-success" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="alert-success" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 16px', borderRadius: 'var(--radius-sm)', backgroundColor: '#dcfce7', color: '#15803d' }}>
           <CheckCircle size={18} />
           <span>{successMsg}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="alert alert-danger" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="alert-error" style={{ marginBottom: '20px' }}>
           <AlertCircle size={18} />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '24px', alignItems: 'start' }}>
         {/* Left Column: Photo & Identity Summary */}
-        <div className="panel-card" style={{ textAlign: 'center', height: 'fit-content' }}>
+        <div className="panel-card" style={{ textAlign: 'center', padding: '24px' }}>
           <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto 16px auto' }}>
             <div className="profile-avatar-large">
               {profile?.profilePhotoUrl ? (
@@ -238,7 +233,7 @@ export const Profile = () => {
             />
           </div>
 
-          <h2 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '6px' }}>
             {profile?.fullName || profile?.username}
           </h2>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
@@ -254,7 +249,7 @@ export const Profile = () => {
                 type="button"
                 onClick={handleDeletePhoto}
                 disabled={uploadingPhoto}
-                className="btn btn-secondary"
+                className="btn-secondary"
                 style={{ fontSize: '12px', padding: '6px 12px', color: '#ef4444', borderColor: '#fca5a5' }}
               >
                 <Trash2 size={13} style={{ marginRight: '4px' }} />
@@ -290,20 +285,19 @@ export const Profile = () => {
         </div>
 
         {/* Right Column: Edit Profile Form */}
-        <div className="panel-card">
-          <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '6px' }}>Personal Details</h3>
+        <div className="panel-card" style={{ padding: '24px 28px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>Personal Details</h3>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
             Ensure your professional details are accurate for institution directories and automated notifications.
           </p>
 
-          <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          <form onSubmit={handleSubmit} className="erp-form">
+            <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label">Full Name</label>
+                <label>Full Name</label>
                 <input
                   type="text"
                   name="fullName"
-                  className="form-control"
                   placeholder="e.g. Dr. Robert Vance"
                   value={formData.fullName}
                   onChange={handleInputChange}
@@ -311,35 +305,32 @@ export const Profile = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Username (Immutable)</label>
+                <label>Username (Immutable)</label>
                 <input
                   type="text"
-                  className="form-control"
                   value={profile?.username || ''}
                   disabled
-                  style={{ opacity: 0.7, cursor: 'not-allowed' }}
+                  style={{ opacity: 0.7, cursor: 'not-allowed', backgroundColor: 'var(--bg-main)' }}
                 />
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label">Email Address (Immutable)</label>
+                <label>Email Address (Immutable)</label>
                 <input
                   type="email"
-                  className="form-control"
                   value={profile?.email || ''}
                   disabled
-                  style={{ opacity: 0.7, cursor: 'not-allowed' }}
+                  style={{ opacity: 0.7, cursor: 'not-allowed', backgroundColor: 'var(--bg-main)' }}
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Phone Number</label>
+                <label>Phone Number</label>
                 <input
                   type="text"
                   name="phoneNumber"
-                  className="form-control"
                   placeholder="+1 (555) 019-2834"
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
@@ -347,13 +338,12 @@ export const Profile = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label">Department</label>
+                <label>Department</label>
                 <input
                   type="text"
                   name="department"
-                  className="form-control"
                   placeholder="e.g. Academic Affairs / Admissions"
                   value={formData.department}
                   onChange={handleInputChange}
@@ -361,11 +351,10 @@ export const Profile = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Designation</label>
+                <label>Designation</label>
                 <input
                   type="text"
                   name="designation"
-                  className="form-control"
                   placeholder="e.g. Senior Academic Registrar"
                   value={formData.designation}
                   onChange={handleInputChange}
@@ -373,20 +362,19 @@ export const Profile = () => {
               </div>
             </div>
 
-            <div className="form-group" style={{ marginBottom: '24px' }}>
-              <label className="form-label">Campus Address / Office Location</label>
-              <textarea
+            <div className="form-group">
+              <label>Campus Address / Office Location</label>
+              <input
+                type="text"
                 name="address"
-                className="form-control"
-                rows="3"
                 placeholder="Building B, Room 304, Campus Lane"
                 value={formData.address}
                 onChange={handleInputChange}
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button type="submit" className="btn btn-primary" disabled={saving}>
+            <div className="form-actions">
+              <button type="submit" className="btn-primary" disabled={saving}>
                 {saving ? 'Saving Changes...' : 'Save Profile Changes'}
               </button>
             </div>
