@@ -50,20 +50,24 @@ public class SmtpEmailService : IEmailService
 
     private SecureSocketOptions GetSecureSocketOptions()
     {
-        if (_options.EnableSsl)
+        // Port 465 is legacy implicit SSL/TLS
+        if (_options.SmtpPort == 465)
         {
-            return _options.SmtpPort == 465
-                ? SecureSocketOptions.SslOnConnect
-                : SecureSocketOptions.Auto;
+            return SecureSocketOptions.SslOnConnect;
         }
 
-        return _options.SmtpPort switch
+        // Port 587 is standard submission with STARTTLS
+        if (_options.SmtpPort == 587)
         {
-            465 => SecureSocketOptions.SslOnConnect,
-            587 => SecureSocketOptions.StartTlsWhenAvailable,
-            25 => SecureSocketOptions.None,
-            _ => SecureSocketOptions.Auto
-        };
+            return SecureSocketOptions.StartTls;
+        }
+
+        if (_options.EnableSsl)
+        {
+            return SecureSocketOptions.Auto;
+        }
+
+        return _options.SmtpPort == 25 ? SecureSocketOptions.None : SecureSocketOptions.Auto;
     }
 
     public async Task<bool> SendEmailDirectAsync(EmailMessageDto message, CancellationToken cancellationToken = default)
@@ -76,25 +80,27 @@ public class SmtpEmailService : IEmailService
             return false;
         }
 
-        // Safe local development simulation when host is localhost without credentials
-        if (string.IsNullOrWhiteSpace(_options.SmtpHost) || (_options.SmtpHost == "localhost" && string.IsNullOrWhiteSpace(_options.SmtpUsername)))
+        // Validate that SMTP configuration is provided. Never simulate successful delivery!
+        if (string.IsNullOrWhiteSpace(_options.SmtpHost) ||
+            string.IsNullOrWhiteSpace(_options.SenderEmail) ||
+            (_options.SmtpHost.Equals("localhost", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(_options.SmtpUsername)))
         {
-            _logger.LogInformation("SMTP unconfigured/localhost. Simulating successful delivery: Type=[{EmailType}], Domain=@{Domain}",
+            _logger.LogError("SMTP delivery failed: SMTP is unconfigured or set to localhost without credentials. Cannot deliver [{EmailType}] to @{Domain}",
                 message.EmailType, domain);
-            return true;
+            return false;
         }
 
         try
         {
             var mimeMessage = new MimeMessage();
-            mimeMessage.From.Add(new MailboxAddress(_options.SenderName, _options.SenderEmail));
+            mimeMessage.From.Add(new MailboxAddress(_options.SenderName, _options.SenderEmail.Trim()));
             mimeMessage.To.Add(new MailboxAddress(message.ToName, message.ToEmail.Trim()));
             mimeMessage.Subject = message.Subject;
 
             var bodyBuilder = new BodyBuilder
             {
                 HtmlBody = message.HtmlBody,
-                TextBody = message.PlainTextBody
+                TextBody = string.IsNullOrWhiteSpace(message.PlainTextBody) ? message.Subject : message.PlainTextBody
             };
 
             mimeMessage.Body = bodyBuilder.ToMessageBody();
@@ -107,16 +113,18 @@ public class SmtpEmailService : IEmailService
                 _options.SmtpHost, _options.SmtpPort, socketOptions, domain);
 
             await client.ConnectAsync(_options.SmtpHost, _options.SmtpPort, socketOptions, cancellationToken);
+            _logger.LogInformation("SMTP connection established with {Host}:{Port}", _options.SmtpHost, _options.SmtpPort);
 
             if (!string.IsNullOrWhiteSpace(_options.SmtpUsername) && !string.IsNullOrWhiteSpace(_options.SmtpPassword))
             {
-                await client.AuthenticateAsync(_options.SmtpUsername, _options.SmtpPassword, cancellationToken);
+                await client.AuthenticateAsync(_options.SmtpUsername.Trim(), _options.SmtpPassword.Trim(), cancellationToken);
+                _logger.LogInformation("SMTP authentication successful for {Username}", _options.SmtpUsername);
             }
 
             await client.SendAsync(mimeMessage, cancellationToken);
-            await client.DisconnectAsync(true, cancellationToken);
+            _logger.LogInformation("SMTP submission successful: [{EmailType}] accepted by server for @{Domain}", message.EmailType, domain);
 
-            _logger.LogInformation("Email [{EmailType}] successfully accepted by SMTP provider for @{Domain}", message.EmailType, domain);
+            await client.DisconnectAsync(true, cancellationToken);
             return true;
         }
         catch (SmtpCommandException ex)
@@ -226,8 +234,8 @@ public class SmtpEmailService : IEmailService
         else
         {
             outboxItem.RetryCount = 1;
-            outboxItem.Status = EmailOutboxStatus.Failed;
-            outboxItem.ErrorMessage = $"Direct delivery attempt failed at {DateTime.UtcNow:u}. Queued for background retry.";
+            outboxItem.Status = EmailOutboxStatus.Pending; // Keep pending so background service will retry
+            outboxItem.ErrorMessage = $"Direct delivery attempt failed at {DateTime.UtcNow:u}. Retries: 1/{outboxItem.MaxRetries}. Queued for background retry.";
         }
 
         await _context.SaveChangesAsync(cancellationToken);
