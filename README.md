@@ -4,6 +4,9 @@ A production-style, web-based **Student Management Mini-ERP** built with **React
 
 Developed as an AI-assisted full-stack development assessment project demonstrating clean architecture, strict database integrity, financial transaction safety, responsive UI, role-based security, and extensibility.
 
+## Vercel live 🎉 :-
+https://student-management-mini-erp-d2609.vercel.app/
+
 ---
 
 ## 1. Project Overview & Capabilities
