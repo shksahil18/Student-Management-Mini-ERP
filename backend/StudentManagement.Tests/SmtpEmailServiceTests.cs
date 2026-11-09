@@ -87,14 +87,14 @@ public class SmtpEmailServiceTests
     }
 
     [Fact]
-    public async Task ProcessPendingOutboxAsync_WhenSmtpUnconfigured_SimulatesSafeLogAndMarksSent()
+    public async Task ProcessPendingOutboxAsync_WhenSmtpUnconfigured_FailsAndIncrementsRetryCount()
     {
         using var db = CreateInMemoryDbContext();
         var mockLogger = new Mock<ILogger<SmtpEmailService>>();
         var emailOptions = Options.Create(new EmailOptions
         {
             SmtpHost = "localhost",
-            SmtpUsername = "" // Unconfigured triggers simulation warning and returns true
+            SmtpUsername = "" // Unconfigured now fails safely without simulated success
         });
 
         db.EmailOutbox.Add(new EmailOutbox
@@ -112,9 +112,10 @@ public class SmtpEmailServiceTests
         await service.ProcessPendingOutboxAsync(10);
 
         var reloaded = await db.EmailOutbox.FirstAsync();
-        Assert.Equal(EmailOutboxStatus.Sent, reloaded.Status);
-        Assert.NotNull(reloaded.ProcessedAt);
-        Assert.Null(reloaded.ErrorMessage);
+        Assert.Equal(EmailOutboxStatus.Pending, reloaded.Status);
+        Assert.Equal(1, reloaded.RetryCount);
+        Assert.NotNull(reloaded.ErrorMessage);
+        Assert.Contains("Delivery failed", reloaded.ErrorMessage);
     }
 }
 
