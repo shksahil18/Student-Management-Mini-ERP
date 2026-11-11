@@ -2,15 +2,25 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, User, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { LogOut, User, ShieldCheck, Sun, Moon, Menu } from 'lucide-react';
 
-export const Navbar = () => {
+export const Navbar = ({ onHamburgerClick }) => {
   const { user, logout, isAdmin } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
   return (
     <header className="erp-navbar">
       <div className="navbar-brand">
+        {/* Hamburger — only visible on ≤768 px */}
+        <button
+          className="hamburger-btn"
+          onClick={onHamburgerClick}
+          aria-label="Open navigation menu"
+          type="button"
+        >
+          <Menu size={22} />
+        </button>
+
         <span className="brand-badge">ERP</span>
         <span className="brand-title">Student Management Mini-ERP</span>
       </div>
@@ -49,7 +59,7 @@ export const Navbar = () => {
 
         <button onClick={logout} className="btn-logout" title="Sign Out">
           <LogOut size={16} />
-          <span>Logout</span>
+          <span className="btn-logout-text">Logout</span>
         </button>
       </div>
     </header>
