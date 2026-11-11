@@ -6,12 +6,12 @@ import { Sidebar } from './Sidebar';
 export const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const openSidebar  = useCallback(() => setSidebarOpen(true),  []);
-  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+  const toggleSidebar = useCallback(() => setSidebarOpen((prev) => !prev), []);
+  const closeSidebar  = useCallback(() => setSidebarOpen(false), []);
 
   return (
     <div className="erp-app">
-      <Navbar onHamburgerClick={openSidebar} />
+      <Navbar onHamburgerClick={toggleSidebar} />
       <div className="erp-body">
         {/* Backdrop — only rendered on mobile when sidebar is open */}
         {sidebarOpen && (

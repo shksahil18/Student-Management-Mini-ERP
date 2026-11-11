@@ -1643,3 +1643,242 @@ a {
   object-fit: cover;
 }
 
+/* ---------------- Table & Layout Helpers ---------------- */
+.table-wrapper,
+.feed-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.profile-layout-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* --------------------------------------------------------------------------
+   Desktop / Laptop Default (> 768px)
+   Hamburger button and mobile drawer header MUST be hidden on desktop/laptop.
+   -------------------------------------------------------------------------- */
+.hamburger-btn {
+  display: none !important;
+}
+
+.sidebar-mobile-header {
+  display: none !important;
+}
+
+.sidebar-backdrop {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Tablet and Mobile Breakpoint (768px down to 320px)
+   Hamburger navigation is strictly active ONLY within this range.
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  /* Show hamburger button ONLY from tablet down to mobile */
+  .hamburger-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+
+  .hamburger-btn:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .dark-theme .hamburger-btn {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #f1f5f9;
+  }
+
+  /* Backdrop overlay */
+  .sidebar-backdrop {
+    display: block !important;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    z-index: 150;
+    animation: backdropFadeIn 0.2s ease-out;
+  }
+
+  @keyframes backdropFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Off-canvas sidebar drawer */
+  .erp-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 270px;
+    max-width: 84vw;
+    height: 100vh;
+    z-index: 160;
+    transform: translateX(-105%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+    overflow-y: auto;
+  }
+
+  .erp-sidebar.sidebar-open {
+    transform: translateX(0);
+    box-shadow: 6px 0 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .sidebar-mobile-header {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-close-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .sidebar-close-btn:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+  }
+
+  /* Main container & navbar adjustments for <= 768px */
+  .erp-navbar {
+    padding: 0 16px;
+  }
+
+  .erp-main-content {
+    padding: 20px 14px;
+  }
+
+  .profile-layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .btn-logout-text {
+    display: none;
+  }
+
+  .btn-logout {
+    padding: 8px 10px;
+  }
+
+  .brand-title {
+    font-size: 14px;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .filter-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .search-form {
+    max-width: 100%;
+  }
+
+  .filter-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .filter-group {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .filter-group select {
+    width: 100%;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile L, M, S Breakpoint (480px down to 320px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .erp-navbar {
+    padding: 0 10px;
+  }
+
+  .brand-title {
+    display: none; /* Show only ERP badge on mobile <= 480px for cleaner navbar */
+  }
+
+  .erp-main-content {
+    padding: 16px 10px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .header-actions > * {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-card {
+    padding: 16px;
+  }
+}
+
+

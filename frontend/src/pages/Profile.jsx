@@ -188,7 +188,7 @@ export const Profile = () => {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '24px', alignItems: 'start' }}>
+      <div className="profile-layout-grid">
         {/* Left Column: Photo & Identity Summary */}
         <div className="panel-card" style={{ textAlign: 'center', padding: '24px' }}>
           <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto 16px auto' }}>
